@@ -1,0 +1,381 @@
+Instructions for Cursor – Minigames WebGL Client (Unity)
+1. Project Overview
+
+You are building a Unity-based WebGL application that will act as a Minigames Hub.
+
+This WebGL app will be:
+
+Embedded inside a mobile app WebView (iOS & Android)
+
+Communicate with a backend via REST APIs
+
+Serve as a white-label, multi-tenant minigames platform
+
+The host mobile app controls:
+
+Authentication token provisioning
+
+Economy (attempts, currency, rewards)
+
+Navigation outside the WebView
+
+The Unity WebGL app controls:
+
+UI & navigation inside the minigames hub
+
+Game session lifecycle
+
+Score submission
+
+Leaderboards & player profile display
+
+2. Platform & Tech Constraints (Very Important)
+
+Engine: Unity (latest LTS)
+
+Build Target: WebGL
+
+Usage Context: Loaded inside a mobile WebView
+
+No native plugins
+
+No direct in-app purchases
+
+No local persistence of sensitive data
+
+Must work reliably with:
+
+Page reloads
+
+App background / foreground
+
+Network interruptions
+
+3. Scene Architecture (Mandatory)
+3.1 Main Scene (Core App Scene)
+
+There must be ONE main persistent scene that contains:
+
+App shell / layout
+
+Main menu
+
+Navigation
+
+Player profile UI
+
+Games list UI
+
+Leaderboards UI
+
+Web request manager
+
+Auth/session manager
+
+This scene:
+
+Is the entry point
+
+Can be reloaded independently
+
+Should persist data in memory only
+
+Do NOT destroy this scene unless explicitly required.
+
+3.2 Game Scenes (One Scene per Game)
+
+Each minigame:
+
+Lives in its own Unity scene
+
+Has no direct knowledge of API
+
+Communicates only via a Game Session Interface
+
+Game scenes:
+
+Are loaded additively or via scene switch
+
+Can be unloaded cleanly
+
+Must be able to return to Main Scene safely
+
+3.3 External / Remote Games (Future-proofing)
+
+The system must support:
+
+Exiting the Unity app
+
+Opening another game via URL redirect
+
+Returning back to the main Unity scene later
+
+This means:
+
+Navigation logic must be decoupled
+
+No hard assumptions that all games live locally
+
+4. API Integration Rules
+4.1 API Ownership
+
+The Unity app integrates ONLY with the following API categories:
+
+Player
+
+Register
+
+Login
+
+Profile (get/update)
+
+Deactivate
+
+Games
+
+Get available games
+
+Game Sessions
+
+Start
+
+Complete
+
+Get session details
+
+My sessions
+
+Active sessions
+
+Scores
+
+My total score
+
+My weekly score
+
+Weekly leaderboard
+
+Game-specific leaderboard
+
+Products
+
+Read-only product list
+
+⚠️ No prize redemption logic
+⚠️ No currency logic
+⚠️ No attempts enforcement
+
+These are handled by the host app.
+
+4.2 Authentication
+
+Auth token will be passed from the host mobile app
+
+Token must be:
+
+Stored only in memory
+
+Sent via Authorization headers
+
+Handle token expiration gracefully (UI fallback)
+
+5. Game Session Lifecycle (Critical)
+
+Each minigame must follow this exact flow:
+
+Main Scene requests:
+
+POST /gameSession/start
+
+
+Server returns:
+
+gameSessionId
+
+Game Scene starts gameplay
+
+On game end:
+
+POST /gameSession/complete
+
+
+With:
+
+gameSessionId
+
+score
+
+optional metadata
+
+Wait for server confirmation
+
+Navigate back to Main Scene
+
+Games must never submit scores directly without a valid session.
+
+6. Code Architecture Requirements
+6.1 Mandatory Systems
+
+Create the following core managers (single responsibility):
+
+ApiClient
+
+AuthManager
+
+PlayerProfileManager
+
+GameCatalogManager
+
+GameSessionManager
+
+LeaderboardManager
+
+SceneNavigationManager
+
+WebViewBridge (JS ↔ Unity)
+
+Each manager:
+
+Must be testable
+
+Must not reference UI directly
+
+Uses events / callbacks
+
+6.2 Game Interface Contract
+
+All games must implement something like:
+
+interface IMinigame
+{
+    void Initialize(GameSessionData session);
+    void StartGame();
+    void EndGame(int score, Dictionary<string, object> metadata);
+}
+
+
+Games:
+
+Do not know about HTTP
+
+Do not know about tokens
+
+Do not know about leaderboards
+
+7. UI / UX Guidelines
+
+Lightweight UI (WebGL performance)
+
+No heavy animations
+
+No blocking calls on main thread
+
+Loading states for all API calls
+
+Error states for:
+
+Network failure
+
+Session failure
+
+Unauthorized access
+
+Assume:
+
+Low-end mobile devices
+
+Unstable mobile networks
+
+8. Multi-Tenant & White-Label Support
+
+The app must support:
+
+Theme configuration (colors, logos)
+
+Text labels from config
+
+Dynamic game list from API
+
+No hardcoded branding
+
+Tenant config should be:
+
+Loaded at startup
+
+Cached in memory
+
+9. WebView Communication
+
+Prepare hooks for:
+
+Receiving auth token
+
+Receiving tenant config
+
+Notifying host app about:
+
+Game start
+
+Game end
+
+Errors
+
+Navigation events
+
+Use:
+
+Application.ExternalCall
+
+SendMessage
+
+JSON-based messaging
+
+10. Non-Goals (Do NOT Implement)
+
+No prize redemption flows
+
+No real-money logic
+
+No local save files
+
+No player-to-player chat
+
+No push notifications
+
+No analytics SDKs (unless stubbed)
+
+11. Deliverables (Initial Phase)
+
+Cursor should start by:
+
+Creating Unity project structure
+
+Setting up Main Scene
+
+Implementing API client skeleton
+
+Implementing Game Session lifecycle
+
+Creating a sample dummy minigame scene
+
+Demonstrating:
+
+Start session
+
+End session
+
+Return to hub
+
+Preparing for WebGL build
+
+12. Code Quality Expectations
+
+Clean architecture
+
+Clear separation of concerns
+
+No God classes
+
+Comments explaining intent, not obvious code
+
+Ready for future expansion (more games, more tenants)

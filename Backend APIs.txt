@@ -1,0 +1,93 @@
+POST
+/api/App/player/register
+Register a player for a tenant
+
+
+
+POST
+/api/App/player/login
+Login as a player
+
+
+
+GET
+/api/App/player/profile
+[PLAYER] Get current player profile
+
+
+
+PUT
+/api/App/player/profile
+[PLAYER] Update current player profile
+
+
+
+PUT
+/api/App/player/deactivate
+[PLAYER] Deactivate an own account
+
+
+
+GET
+/api/App/game/available
+[PLAYER] Get all available/active games that can be played with advanced filtering
+
+
+
+POST
+/api/App/gameSession/start
+[PLAYER] Start a new game session
+
+
+
+POST
+/api/App/gameSession/complete
+[PLAYER] Complete/finish a game session
+
+
+
+GET
+/api/App/gameSession/{gameSessionId}
+[PLAYER] Get game session details by ID
+
+
+
+GET
+/api/App/gameSession/my-sessions
+[PLAYER] Get all my game sessions with pagination and advanced filtering
+
+
+
+GET
+/api/App/gameSession/my-sessions/active
+[PLAYER] Get my active game sessions (in progress) with pagination
+
+
+
+GET
+/api/App/products
+[PLAYER] Get all available products with pagination and filtering
+
+
+
+GET
+/api/App/score/my-total
+[PLAYER] Get my total score
+
+
+
+GET
+/api/App/score/my-weekly
+[PLAYER] Get my weekly score
+
+
+
+GET
+/api/App/score/weekly
+[PLAYER] Get weekly scores for all players
+
+
+
+GET
+/api/App/score/leaderboard/{gameId}
+[PLAYER] Get leaderboard for specific game

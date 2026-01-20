@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minigames Hub</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #unity-container {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="unity-container"></div>
+    
+    <script>
+        // WebView Bridge for communication with host mobile app
+        window.unityWebViewBridge = {
+            // Send message to Unity
+            sendToUnity: function(method, data) {
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage('WebViewBridge', method, data);
+                }
+            },
+            
+            // Receive message from host app
+            receiveFromHost: function(eventType, data) {
+                switch(eventType) {
+                    case 'authToken':
+                        window.unityWebViewBridge.sendToUnity('ReceiveAuthToken', data);
+                        break;
+                    case 'baseUrl':
+                        window.unityWebViewBridge.sendToUnity('ReceiveBaseUrl', data);
+                        break;
+                    case 'tenantConfig':
+                        window.unityWebViewBridge.sendToUnity('ReceiveTenantConfig', data);
+                        break;
+                }
+            },
+            
+            // Send message to host app
+            sendMessage: function(eventType, data) {
+                if (window.ReactNativeWebView) {
+                    // React Native WebView
+                    window.ReactNativeWebView.postMessage(JSON.stringify({
+                        type: eventType,
+                        data: data
+                    }));
+                } else if (window.webkit && window.webkit.messageHandlers) {
+                    // iOS WKWebView
+                    window.webkit.messageHandlers.unity.postMessage({
+                        type: eventType,
+                        data: data
+                    });
+                } else if (window.Android) {
+                    // Android WebView
+                    window.Android.onUnityMessage(eventType, data);
+                } else {
+                    console.log('[WebView Bridge] Host app not detected, message:', eventType, data);
+                }
+            }
+        };
+        
+        // Listen for messages from host app
+        window.addEventListener('message', function(event) {
+            if (event.data && typeof event.data === 'object') {
+                window.unityWebViewBridge.receiveFromHost(event.data.type, event.data.data);
+            }
+        });
+    </script>
+</body>
+</html>
