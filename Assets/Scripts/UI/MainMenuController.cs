@@ -16,6 +16,8 @@ namespace Minigames.UI
         [SerializeField] private GameObject gamesPanel;
         [SerializeField] private GameObject profilePanel;
         [SerializeField] private GameObject leaderboardsPanel;
+        [SerializeField] private GameObject marketplacePanel;
+        [SerializeField] private GameObject questsPanel;
         [SerializeField] private GameObject loadingPanel;
         [SerializeField] private GameObject errorPanel;
 
@@ -23,6 +25,8 @@ namespace Minigames.UI
         [SerializeField] private Button gamesButton;
         [SerializeField] private Button profileButton;
         [SerializeField] private Button leaderboardsButton;
+        [SerializeField] private Button marketplaceButton;
+        [SerializeField] private Button questsButton;
 
         [Header("Games List")]
         [SerializeField] private Transform gamesListContainer;
@@ -57,6 +61,12 @@ namespace Minigames.UI
             if (leaderboardsButton != null)
                 leaderboardsButton.onClick.AddListener(() => ShowPanel(leaderboardsPanel));
 
+            if (marketplaceButton != null)
+                marketplaceButton.onClick.AddListener(() => ShowPanel(marketplacePanel));
+
+            if (questsButton != null)
+                questsButton.onClick.AddListener(() => ShowPanel(questsPanel));
+
             // Show games panel by default
             ShowPanel(gamesPanel);
         }
@@ -88,6 +98,8 @@ namespace Minigames.UI
             if (gamesPanel != null) gamesPanel.SetActive(false);
             if (profilePanel != null) profilePanel.SetActive(false);
             if (leaderboardsPanel != null) leaderboardsPanel.SetActive(false);
+            if (marketplacePanel != null) marketplacePanel.SetActive(false);
+            if (questsPanel != null) questsPanel.SetActive(false);
 
             // Show selected panel
             if (panel != null) panel.SetActive(true);
@@ -101,12 +113,8 @@ namespace Minigames.UI
 
         private void ShowError(string message)
         {
-            if (errorPanel != null)
-            {
-                errorPanel.SetActive(true);
-                if (errorText != null)
-                    errorText.text = message;
-            }
+            // Use PopupManager for errors instead of inline error panel
+            PopupManager.Instance.ShowError("Error", message);
         }
 
         private void HandleGamesLoaded(List<GameInfo> games)
@@ -152,6 +160,24 @@ namespace Minigames.UI
         {
             Debug.Log($"MainMenuController: Selected game {game.name} (ID: {game.id})");
             
+            // Show game instructions if available, then start game
+            string instructions = GetGameInstructions(game);
+            if (!string.IsNullOrEmpty(instructions))
+            {
+                PopupManager.Instance.ShowInstructions(
+                    game.name,
+                    instructions,
+                    () => StartGameSession(game)
+                );
+            }
+            else
+            {
+                StartGameSession(game);
+            }
+        }
+
+        private void StartGameSession(GameInfo game)
+        {
             // Start game session and load game scene
             GameSessionManager.Instance.StartSession(
                 game.id,
@@ -170,6 +196,18 @@ namespace Minigames.UI
                     ShowError($"Failed to start game session: {error}");
                 }
             );
+        }
+
+        private string GetGameInstructions(GameInfo game)
+        {
+            // Try to get instructions from game metadata
+            if (game.metadata != null && game.metadata.ContainsKey("instructions"))
+            {
+                return game.metadata["instructions"].ToString();
+            }
+            
+            // Fallback to description if no instructions
+            return game.description;
         }
     }
 }

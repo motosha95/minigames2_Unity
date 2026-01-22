@@ -77,14 +77,22 @@ Canvas
 │   └── ProfileController component
 ├── LeaderboardsPanel (Panel)
 │   └── LeaderboardController component
+├── MarketplacePanel (Panel)
+│   └── MarketplaceController component
+├── QuestsPanel (Panel)
+│   └── QuestsController component
 ├── LoadingPanel (Panel)
 │   └── LoadingIndicator component
-├── ErrorPanel (Panel)
+├── ErrorPanel (Panel) [Optional - now using PopupManager]
 │   └── ErrorDisplay component
+├── PopupManager (Empty GameObject)
+│   └── PopupManager component
 └── NavigationBar (Horizontal Layout Group)
     ├── GamesButton
     ├── ProfileButton
-    └── LeaderboardsButton
+    ├── LeaderboardsButton
+    ├── MarketplaceButton
+    └── QuestsButton
 ```
 
 ### 4.5 Set Up MainMenuController
@@ -100,9 +108,11 @@ Canvas
    - **Games Button**: Drag `GamesButton` GameObject
    - **Profile Button**: Drag `ProfileButton` GameObject
    - **Leaderboards Button**: Drag `LeaderboardsButton` GameObject
+   - **Marketplace Button**: Drag `MarketplaceButton` GameObject
+   - **Quests Button**: Drag `QuestsButton` GameObject
    - **Games List Container**: Drag `GamesListContainer` GameObject
    - **Game Item Prefab**: Create this next (see 4.6)
-   - **Error Text**: Drag Text component from `ErrorPanel`
+   - **Error Text**: Drag Text component from `ErrorPanel` (optional, now using popups)
 
 ### 4.6 Create Game Item Prefab
 
@@ -166,7 +176,90 @@ Canvas
 1. Select each button (`GamesButton`, `ProfileButton`, `LeaderboardsButton`)
 2. Add OnClick listeners (they're handled by `MainMenuController`)
 
-### 4.11 Save Main Scene
+### 4.11 Set Up Marketplace Panel
+
+1. Select `MarketplacePanel` GameObject
+2. Add Component → `MarketplaceController`
+3. Create UI elements:
+   - **Vertical Layout Group** for products list (`ProductsListContainer`)
+   - **Button** for refresh (`RefreshButton`)
+   - **Text** for loading state (`LoadingText`)
+   - **Panel** for empty state (`EmptyStatePanel`) - optional
+4. Wire up all references in `MarketplaceController`
+5. Create `ProductItem` prefab (see 4.12)
+
+### 4.12 Create Product Item Prefab
+
+1. **GameObject → UI → Button** (or Panel)
+2. Name it `ProductItem`
+3. Add Component → `ProductItemController`
+4. Add child elements:
+   - **Text** for product name (`ProductNameText`)
+   - **Text** for description (`ProductDescriptionText`)
+   - **Text** for cost (`ProductCostText`)
+   - **Image** for product image (`ProductImage`) - optional
+5. Wire up references in `ProductItemController`
+6. Drag to `Assets/Prefabs` folder
+
+### 4.13 Set Up Quests Panel
+
+1. Select `QuestsPanel` GameObject
+2. Add Component → `QuestsController`
+3. Create UI elements:
+   - **Dropdown** for quest type (`QuestTypeDropdown`)
+   - **Vertical Layout Group** for quests list (`QuestsListContainer`)
+   - **Button** for refresh (`RefreshButton`)
+   - **Text** for loading state (`LoadingText`)
+   - **Panel** for empty state (`EmptyStatePanel`) - optional
+4. Wire up all references in `QuestsController`
+5. Create `QuestItem` prefab (see 4.14)
+
+### 4.14 Create Quest Item Prefab
+
+1. **GameObject → UI → Panel**
+2. Name it `QuestItem`
+3. Add Component → `QuestItemController`
+4. Add child elements:
+   - **Text** for title (`TitleText`)
+   - **Text** for description (`DescriptionText`)
+   - **Text** for progress (`ProgressText`)
+   - **Slider** for progress bar (`ProgressSlider`)
+   - **Text** for reward (`RewardText`)
+   - **Button** for claim (`ClaimButton`)
+   - **GameObject** for completed badge (`CompletedBadge`) - optional
+   - **GameObject** for claimed badge (`ClaimedBadge`) - optional
+5. Wire up references in `QuestItemController`
+6. Drag to `Assets/Prefabs` folder
+
+### 4.15 Set Up Popup System
+
+1. Create empty GameObject: **GameObject → Create Empty**
+2. Name it `PopupManager`
+3. Add Component → `PopupManager`
+4. Create popup prefabs (see 4.16)
+5. Assign prefabs in `PopupManager` component:
+   - **Error Popup Prefab**
+   - **Instruction Popup Prefab**
+   - **Message Popup Prefab`
+6. `Popup Container` will be auto-created if not assigned
+
+### 4.16 Create Popup Prefabs
+
+For each popup type (Error, Instruction, Message):
+
+1. **GameObject → UI → Panel**
+2. Name it `ErrorPopup`, `InstructionPopup`, or `MessagePopup`
+3. Add Component → `PopupController`
+4. Add child elements:
+   - **Text** for title (`TitleText`)
+   - **Text** for content (`ContentText`)
+   - **Button** for close (`CloseButton`)
+5. Style as needed (different colors for different types)
+6. Wire up references in `PopupController`
+7. Save as prefab in `Assets/Prefabs`
+8. Assign to `PopupManager` component
+
+### 4.17 Save Main Scene
 
 1. **File → Save** (Ctrl+S / Cmd+S)
 2. Ensure `MainScene` is saved in `Assets/Scenes`

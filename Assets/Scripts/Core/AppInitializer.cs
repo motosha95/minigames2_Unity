@@ -1,5 +1,6 @@
 using UnityEngine;
 using Minigames.Managers;
+using Minigames.UI;
 
 namespace Minigames.Core
 {
@@ -52,6 +53,9 @@ namespace Minigames.Core
             var leaderboardManager = LeaderboardManager.Instance;
             var sceneNavigationManager = SceneNavigationManager.Instance;
             var webViewBridge = WebViewBridge.Instance;
+            var productManager = ProductManager.Instance;
+            var questManager = QuestManager.Instance;
+            var popupManager = PopupManager.Instance;
 
             Debug.Log("AppInitializer: All managers initialized");
         }
