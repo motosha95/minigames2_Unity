@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Minigames.Data;
 using Minigames.Managers;
 
@@ -33,7 +34,7 @@ namespace Minigames.UI
         [SerializeField] private GameObject gameItemPrefab;
 
         [Header("Error Display")]
-        [SerializeField] private Text errorText;
+        [SerializeField] private TextMeshProUGUI errorText;
 
         private List<GameInfo> availableGames = new List<GameInfo>();
 

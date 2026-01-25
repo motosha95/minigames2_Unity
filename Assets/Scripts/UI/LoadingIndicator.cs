@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace Minigames.UI
 {
@@ -10,7 +11,7 @@ namespace Minigames.UI
     {
         [Header("UI References")]
         [SerializeField] private GameObject loadingPanel;
-        [SerializeField] private Text loadingText;
+        [SerializeField] private TextMeshProUGUI loadingText;
         [SerializeField] private bool rotateOnShow = true;
 
         private void Start()

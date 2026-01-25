@@ -7,6 +7,7 @@ This guide will help you set up the Unity project and create the necessary scene
 - Unity Hub installed
 - Unity LTS version (2020.3 or later recommended)
 - Basic knowledge of Unity Editor
+- **TextMeshPro package** (see TextMeshPro Setup below)
 
 ## Step 1: Create Unity Project
 
@@ -16,7 +17,18 @@ This guide will help you set up the Unity project and create the necessary scene
 4. Name it "MinigamesHub" or similar
 5. Choose a location and click "Create"
 
-## Step 2: Import Project Files
+## Step 2: Import TextMeshPro Package
+
+1. In Unity Editor, go to **Window → Package Manager**
+2. Select **Unity Registry** (top-left dropdown)
+3. Search for **"TextMeshPro"**
+4. Click **Install**
+5. When prompted, click **Import TMP Essentials** (required)
+6. Optionally import **TMP Examples & Extras** for examples
+
+> **Note**: All text components use TextMeshPro for better quality and RTL support. See `TEXTMESHPRO_SETUP.md` for detailed setup.
+
+## Step 3: Import Project Files
 
 1. Copy all files from this repository into your Unity project folder
 2. Ensure the folder structure matches:
@@ -29,23 +41,23 @@ This guide will help you set up the Unity project and create the necessary scene
    └── Plugins/
    ```
 
-## Step 3: Set Build Target to WebGL
+## Step 4: Set Build Target to WebGL
 
 1. Go to **File → Build Settings**
 2. Select **WebGL** platform
 3. Click **Switch Platform**
 4. Wait for Unity to reimport assets
 
-## Step 4: Create Main Scene
+## Step 5: Create Main Scene
 
-### 4.1 Create the Scene
+### 5.1 Create the Scene
 
 1. Right-click in `Assets/Scenes` folder
 2. Create → Scene
 3. Name it `MainScene`
 4. Double-click to open it
 
-### 4.2 Set Up App Initializer
+### 5.2 Set Up App Initializer
 
 1. Create empty GameObject: **GameObject → Create Empty**
 2. Name it `AppInitializer`
@@ -53,7 +65,7 @@ This guide will help you set up the Unity project and create the necessary scene
 4. Search for `AppInitializer` and add it
 5. Set the `Default Base Url` field to your API base URL
 
-### 4.3 Create UI Canvas
+### 5.3 Create UI Canvas
 
 1. **GameObject → UI → Canvas**
 2. Name it `MainCanvas`
@@ -62,7 +74,9 @@ This guide will help you set up the Unity project and create the necessary scene
    - Reference Resolution: **1920 x 1080**
    - Match: **0.5**
 
-### 4.4 Create Main Menu Structure
+### 5.4 Create Main Menu Structure
+
+**Important**: All text elements should use **TextMeshPro - Text (UI)** instead of standard Text components.
 
 Create the following UI hierarchy under Canvas:
 
@@ -95,7 +109,7 @@ Canvas
     └── QuestsButton
 ```
 
-### 4.5 Set Up MainMenuController
+### 5.5 Set Up MainMenuController
 
 1. Select `MainMenuController` GameObject
 2. Add Component → `MainMenuController`
@@ -114,7 +128,9 @@ Canvas
    - **Game Item Prefab**: Create this next (see 4.6)
    - **Error Text**: Drag Text component from `ErrorPanel` (optional, now using popups)
 
-### 4.6 Create Game Item Prefab
+### 5.6 Create Game Item Prefab
+
+**Note**: Use **TextMeshPro - Text (UI)** for all text elements.
 
 1. **GameObject → UI → Button**
 2. Name it `GameItem`
@@ -128,7 +144,9 @@ Canvas
 6. Drag `GameItem` from Hierarchy to `Assets/Prefabs` folder to create prefab
 7. Delete `GameItem` from Hierarchy (keep prefab)
 
-### 4.7 Set Up Profile Panel
+### 5.7 Set Up Profile Panel
+
+**Note**: Use **TextMeshPro - Text (UI)** for all text elements.
 
 1. Select `ProfilePanel` GameObject
 2. Add Component → `ProfileController`
@@ -142,7 +160,9 @@ Canvas
    - **Button** for update display name
 4. Wire up all references in `ProfileController` component
 
-### 4.8 Set Up Leaderboards Panel
+### 5.8 Set Up Leaderboards Panel
+
+**Note**: Use **TextMeshPro - Text (UI)** for all text elements.
 
 1. Select `LeaderboardsPanel` GameObject
 2. Add Component → `LeaderboardController`
@@ -158,7 +178,9 @@ Canvas
    - Drag to Prefabs folder
 5. Wire up references in `LeaderboardController`
 
-### 4.9 Set Up Loading and Error Panels
+### 5.9 Set Up Loading and Error Panels
+
+**Note**: Use **TextMeshPro - Text (UI)** for all text elements.
 
 1. Select `LoadingPanel`
 2. Add Component → `LoadingIndicator`
@@ -171,12 +193,14 @@ Canvas
 4. Add child **Button** for close
 5. Wire up references
 
-### 4.10 Set Up Navigation Buttons
+### 5.10 Set Up Navigation Buttons
 
 1. Select each button (`GamesButton`, `ProfileButton`, `LeaderboardsButton`)
 2. Add OnClick listeners (they're handled by `MainMenuController`)
 
-### 4.11 Set Up Marketplace Panel
+### 5.11 Set Up Marketplace Panel
+
+**Note**: Use **TextMeshPro - Text (UI)** for all text elements.
 
 1. Select `MarketplacePanel` GameObject
 2. Add Component → `MarketplaceController`
@@ -188,7 +212,9 @@ Canvas
 4. Wire up all references in `MarketplaceController`
 5. Create `ProductItem` prefab (see 4.12)
 
-### 4.12 Create Product Item Prefab
+### 5.12 Create Product Item Prefab
+
+**Note**: Use **TextMeshPro - Text (UI)** for all text elements.
 
 1. **GameObject → UI → Button** (or Panel)
 2. Name it `ProductItem`
@@ -201,7 +227,9 @@ Canvas
 5. Wire up references in `ProductItemController`
 6. Drag to `Assets/Prefabs` folder
 
-### 4.13 Set Up Quests Panel
+### 5.13 Set Up Quests Panel
+
+**Note**: Use **TextMeshPro - Text (UI)** for all text elements.
 
 1. Select `QuestsPanel` GameObject
 2. Add Component → `QuestsController`
@@ -214,7 +242,9 @@ Canvas
 4. Wire up all references in `QuestsController`
 5. Create `QuestItem` prefab (see 4.14)
 
-### 4.14 Create Quest Item Prefab
+### 5.14 Create Quest Item Prefab
+
+**Note**: Use **TextMeshPro - Text (UI)** for all text elements.
 
 1. **GameObject → UI → Panel**
 2. Name it `QuestItem`
@@ -231,7 +261,9 @@ Canvas
 5. Wire up references in `QuestItemController`
 6. Drag to `Assets/Prefabs` folder
 
-### 4.15 Set Up Popup System
+### 5.15 Set Up Popup System
+
+**Note**: Use **TextMeshPro - Text (UI)** for all text elements in popups.
 
 1. Create empty GameObject: **GameObject → Create Empty**
 2. Name it `PopupManager`
@@ -243,7 +275,9 @@ Canvas
    - **Message Popup Prefab`
 6. `Popup Container` will be auto-created if not assigned
 
-### 4.16 Create Popup Prefabs
+### 5.16 Create Popup Prefabs
+
+**Important**: Use **TextMeshPro - Text (UI)** for title and content text.
 
 For each popup type (Error, Instruction, Message):
 
@@ -259,12 +293,12 @@ For each popup type (Error, Instruction, Message):
 7. Save as prefab in `Assets/Prefabs`
 8. Assign to `PopupManager` component
 
-### 4.17 Save Main Scene
+### 5.17 Save Main Scene
 
 1. **File → Save** (Ctrl+S / Cmd+S)
 2. Ensure `MainScene` is saved in `Assets/Scenes`
 
-## Step 5: Create Sample Game Scene
+## Step 6: Create Sample Game Scene
 
 ### 5.1 Create the Scene
 
@@ -273,14 +307,16 @@ For each popup type (Error, Instruction, Message):
 3. Name it `SampleDummyGameScene`
 4. Double-click to open it
 
-### 5.2 Set Up Game GameObject
+### 6.2 Set Up Game GameObject
 
 1. Create empty GameObject: **GameObject → Create Empty**
 2. Name it `SampleDummyGame`
 3. Add Component → `SampleDummyGame`
 4. Set `Game Id` field (e.g., "sample-dummy-game")
 
-### 5.3 Create UI for Game
+### 6.3 Create UI for Game
+
+**Note**: Use **TextMeshPro - Text (UI)** for all text elements.
 
 1. **GameObject → UI → Canvas**
 2. Name it `GameCanvas`
@@ -290,7 +326,7 @@ For each popup type (Error, Instruction, Message):
    - **Button** for end game (`EndGameButton`)
    - **Button** for return (`ReturnButton`)
 
-### 5.4 Wire Up SampleDummyGame
+### 6.4 Wire Up SampleDummyGame
 
 1. Select `SampleDummyGame` GameObject
 2. In `SampleDummyGame` component:
@@ -299,19 +335,19 @@ For each popup type (Error, Instruction, Message):
    - Wire up `End Game Button`
    - Wire up `Return Button`
 
-### 5.5 Add GameLauncher
+### 6.5 Add GameLauncher
 
 1. Create empty GameObject: **GameObject → Create Empty**
 2. Name it `GameLauncher`
 3. Add Component → `GameLauncher`
 4. This will automatically initialize the game when scene loads
 
-### 5.6 Save Game Scene
+### 6.6 Save Game Scene
 
 1. **File → Save**
 2. Ensure `SampleDummyGameScene` is saved
 
-## Step 6: Configure Build Settings
+## Step 7: Configure Build Settings
 
 1. **File → Build Settings**
 2. Ensure **WebGL** is selected
@@ -324,14 +360,14 @@ For each popup type (Error, Instruction, Message):
    - Set **Company Name** and **Product Name**
    - Set **Version**
 
-## Step 7: Test in Editor
+## Step 8: Test in Editor
 
 1. Open `MainScene`
 2. Press **Play** button
 3. Test navigation between panels
 4. Test game loading (will fail without API, but should show errors properly)
 
-## Step 8: Build for WebGL
+## Step 9: Build for WebGL
 
 1. **File → Build Settings**
 2. Click **Add Open Scenes** to add `MainScene`
@@ -339,7 +375,7 @@ For each popup type (Error, Instruction, Message):
 4. Choose output folder
 5. Wait for build to complete
 
-## Step 9: WebView Integration
+## Step 10: WebView Integration
 
 ### For React Native:
 

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace Minigames.UI
 {
@@ -10,7 +11,7 @@ namespace Minigames.UI
     {
         [Header("UI References")]
         [SerializeField] private GameObject errorPanel;
-        [SerializeField] private Text errorText;
+        [SerializeField] private TextMeshProUGUI errorText;
         [SerializeField] private Button closeButton;
 
         private void Start()

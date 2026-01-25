@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Minigames.Data;
 
 namespace Minigames.UI
@@ -10,8 +11,8 @@ namespace Minigames.UI
     public class GameItemController : MonoBehaviour
     {
         [Header("UI References")]
-        [SerializeField] private Text gameNameText;
-        [SerializeField] private Text gameDescriptionText;
+        [SerializeField] private TextMeshProUGUI gameNameText;
+        [SerializeField] private TextMeshProUGUI gameDescriptionText;
         [SerializeField] private Image thumbnailImage;
         [SerializeField] private Button playButton;
 

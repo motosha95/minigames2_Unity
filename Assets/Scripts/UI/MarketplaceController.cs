@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Minigames.Data;
 using Minigames.Managers;
 
@@ -16,7 +17,7 @@ namespace Minigames.UI
         [SerializeField] private Transform productsListContainer;
         [SerializeField] private GameObject productItemPrefab;
         [SerializeField] private Button refreshButton;
-        [SerializeField] private Text loadingText;
+        [SerializeField] private TextMeshProUGUI loadingText;
         [SerializeField] private GameObject emptyStatePanel;
 
         private List<Product> availableProducts = new List<Product>();

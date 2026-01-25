@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Minigames.Data;
 
 namespace Minigames.Games
@@ -13,8 +14,8 @@ namespace Minigames.Games
     public class SampleDummyGame : BaseMinigame
     {
         [Header("UI References")]
-        [SerializeField] private Text scoreText;
-        [SerializeField] private Text timerText;
+        [SerializeField] private TextMeshProUGUI scoreText;
+        [SerializeField] private TextMeshProUGUI timerText;
         [SerializeField] private Button endGameButton;
         [SerializeField] private Button returnButton;
 

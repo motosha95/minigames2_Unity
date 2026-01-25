@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Minigames.Data;
 
 namespace Minigames.UI
@@ -10,11 +11,11 @@ namespace Minigames.UI
     public class QuestItemController : MonoBehaviour
     {
         [Header("UI References")]
-        [SerializeField] private Text titleText;
-        [SerializeField] private Text descriptionText;
-        [SerializeField] private Text progressText;
+        [SerializeField] private TextMeshProUGUI titleText;
+        [SerializeField] private TextMeshProUGUI descriptionText;
+        [SerializeField] private TextMeshProUGUI progressText;
         [SerializeField] private Slider progressSlider;
-        [SerializeField] private Text rewardText;
+        [SerializeField] private TextMeshProUGUI rewardText;
         [SerializeField] private Button claimButton;
         [SerializeField] private GameObject completedBadge;
         [SerializeField] private GameObject claimedBadge;

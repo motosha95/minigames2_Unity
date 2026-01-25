@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Minigames.Data;
 using Minigames.Managers;
 
@@ -11,10 +12,10 @@ namespace Minigames.UI
     public class ProfileController : MonoBehaviour
     {
         [Header("UI References")]
-        [SerializeField] private Text usernameText;
-        [SerializeField] private Text displayNameText;
-        [SerializeField] private Text totalScoreText;
-        [SerializeField] private Text weeklyScoreText;
+        [SerializeField] private TextMeshProUGUI usernameText;
+        [SerializeField] private TextMeshProUGUI displayNameText;
+        [SerializeField] private TextMeshProUGUI totalScoreText;
+        [SerializeField] private TextMeshProUGUI weeklyScoreText;
         [SerializeField] private Button refreshButton;
         [SerializeField] private InputField displayNameInput;
         [SerializeField] private Button updateDisplayNameButton;

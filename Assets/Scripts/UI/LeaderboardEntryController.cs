@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Minigames.Data;
 
 namespace Minigames.UI
@@ -10,9 +11,9 @@ namespace Minigames.UI
     public class LeaderboardEntryController : MonoBehaviour
     {
         [Header("UI References")]
-        [SerializeField] private Text rankText;
-        [SerializeField] private Text playerNameText;
-        [SerializeField] private Text scoreText;
+        [SerializeField] private TextMeshProUGUI rankText;
+        [SerializeField] private TextMeshProUGUI playerNameText;
+        [SerializeField] private TextMeshProUGUI scoreText;
 
         public void Setup(LeaderboardEntry entry)
         {

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace Minigames.UI
 {
@@ -10,8 +11,8 @@ namespace Minigames.UI
     public class PopupController : MonoBehaviour
     {
         [Header("UI References")]
-        [SerializeField] private Text titleText;
-        [SerializeField] private Text contentText;
+        [SerializeField] private TextMeshProUGUI titleText;
+        [SerializeField] private TextMeshProUGUI contentText;
         [SerializeField] private Button closeButton;
         [SerializeField] private GameObject popupPanel;
 

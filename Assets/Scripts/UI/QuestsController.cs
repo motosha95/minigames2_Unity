@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Minigames.Data;
 using Minigames.Managers;
 
@@ -17,7 +18,7 @@ namespace Minigames.UI
         [SerializeField] private Transform questsListContainer;
         [SerializeField] private GameObject questItemPrefab;
         [SerializeField] private Button refreshButton;
-        [SerializeField] private Text loadingText;
+        [SerializeField] private TextMeshProUGUI loadingText;
         [SerializeField] private GameObject emptyStatePanel;
 
         private List<Quest> weeklyQuests = new List<Quest>();
