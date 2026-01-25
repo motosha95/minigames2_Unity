@@ -25,6 +25,7 @@ Assets/
 │   │   ├── BaseMinigame.cs           # Base class for minigames
 │   │   └── SampleDummyGame.cs        # Sample dummy game for testing
 │   └── UI/
+│       ├── AuthController.cs         # Login / Register UI
 │       ├── MainMenuController.cs     # Main menu UI controller
 │       ├── GameItemController.cs     # Game list item controller
 │       ├── ProfileController.cs      # Profile panel controller
@@ -68,6 +69,14 @@ Assets/
 - Receives tenant configuration
 - Receives base API URL
 - Sends game events to host app (start, end, errors, navigation)
+
+### Authentication & Registration
+- **Login** and **Register** forms (AuthController)
+- Main content (Games, Profile, etc.) gated until the user is authenticated
+- **Logout** from the Profile panel
+- Token can be provided by the host app via WebView (skips in-app login)
+
+See **[AUTH_INSTRUCTIONS.md](AUTH_INSTRUCTIONS.md)** for user steps, developer setup, and API details.
 
 ## Setup Instructions
 

@@ -52,8 +52,10 @@ namespace Minigames.Managers
         {
             authToken = token;
             ApiClient.Instance.SetAuthToken(token);
-            // Optionally fetch profile after token is set
-            FetchProfile();
+            FetchProfile(
+                (profile) => OnLoginSuccess?.Invoke(profile),
+                (error) => OnAuthError?.Invoke(error)
+            );
         }
 
         /// <summary>

@@ -13,6 +13,10 @@ namespace Minigames.UI
     /// </summary>
     public class MainMenuController : MonoBehaviour
     {
+        [Header("Auth")]
+        [SerializeField] private GameObject authPanel;
+        [SerializeField] private GameObject mainContentRoot;
+
         [Header("Menu Panels")]
         [SerializeField] private GameObject gamesPanel;
         [SerializeField] private GameObject profilePanel;
@@ -42,7 +46,7 @@ namespace Minigames.UI
         {
             InitializeUI();
             SubscribeToEvents();
-            LoadInitialData();
+            RefreshAuthState();
         }
 
         private void OnDestroy()
@@ -67,15 +71,14 @@ namespace Minigames.UI
 
             if (questsButton != null)
                 questsButton.onClick.AddListener(() => ShowPanel(questsPanel));
-
-            // Show games panel by default
-            ShowPanel(gamesPanel);
         }
 
         private void SubscribeToEvents()
         {
             GameCatalogManager.Instance.OnGamesLoaded += HandleGamesLoaded;
             GameCatalogManager.Instance.OnGamesLoadError += HandleGamesLoadError;
+            AuthManager.Instance.OnLoginSuccess += HandleLoginSuccess;
+            AuthManager.Instance.OnLogout += HandleLogout;
         }
 
         private void UnsubscribeFromEvents()
@@ -85,6 +88,48 @@ namespace Minigames.UI
                 GameCatalogManager.Instance.OnGamesLoaded -= HandleGamesLoaded;
                 GameCatalogManager.Instance.OnGamesLoadError -= HandleGamesLoadError;
             }
+            if (AuthManager.Instance != null)
+            {
+                AuthManager.Instance.OnLoginSuccess -= HandleLoginSuccess;
+                AuthManager.Instance.OnLogout -= HandleLogout;
+            }
+        }
+
+        private void RefreshAuthState()
+        {
+            if (AuthManager.Instance.IsAuthenticated())
+            {
+                ShowMainContent();
+                LoadInitialData();
+            }
+            else
+            {
+                ShowAuthPanel();
+            }
+        }
+
+        private void ShowAuthPanel()
+        {
+            if (authPanel != null) authPanel.SetActive(true);
+            if (mainContentRoot != null) mainContentRoot.SetActive(false);
+        }
+
+        private void ShowMainContent()
+        {
+            if (authPanel != null) authPanel.SetActive(false);
+            if (mainContentRoot != null) mainContentRoot.SetActive(true);
+            ShowPanel(gamesPanel);
+        }
+
+        private void HandleLoginSuccess(PlayerProfile _)
+        {
+            ShowMainContent();
+            LoadInitialData();
+        }
+
+        private void HandleLogout()
+        {
+            ShowAuthPanel();
         }
 
         private void LoadInitialData()

@@ -17,8 +17,9 @@ namespace Minigames.UI
         [SerializeField] private TextMeshProUGUI totalScoreText;
         [SerializeField] private TextMeshProUGUI weeklyScoreText;
         [SerializeField] private Button refreshButton;
-        [SerializeField] private InputField displayNameInput;
+        [SerializeField] private TMP_InputField displayNameInput;
         [SerializeField] private Button updateDisplayNameButton;
+        [SerializeField] private Button logoutButton;
 
         private void Start()
         {
@@ -27,6 +28,9 @@ namespace Minigames.UI
 
             if (updateDisplayNameButton != null)
                 updateDisplayNameButton.onClick.AddListener(UpdateDisplayName);
+
+            if (logoutButton != null)
+                logoutButton.onClick.AddListener(OnLogoutClicked);
 
             SubscribeToEvents();
             LoadProfile();
@@ -74,10 +78,15 @@ namespace Minigames.UI
             {
                 PlayerProfileManager.Instance.UpdateDisplayName(
                     displayNameInput.text,
-                    (profile) => Debug.Log("Display name updated successfully"),
-                    (error) => Debug.LogError($"Failed to update display name: {error}")
+                    (profile) => PopupManager.Instance.ShowMessage("Profile", "Display name updated."),
+                    (error) => PopupManager.Instance.ShowError("Profile", $"Failed to update: {error}")
                 );
             }
+        }
+
+        private void OnLogoutClicked()
+        {
+            AuthManager.Instance.Logout();
         }
 
         private void HandleProfileUpdated(PlayerProfile profile)
