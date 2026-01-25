@@ -7,29 +7,42 @@ using Minigames.Managers;
 namespace Minigames.UI
 {
     /// <summary>
-    /// Controls the authentication UI: login and registration forms.
-    /// Shows login/register panels and wires them to AuthManager.
+    /// Controls the authentication UI: login (email or username), registration with confirm password,
+    /// and OTP verification.
     /// </summary>
     public class AuthController : MonoBehaviour
     {
         [Header("Login Form")]
         [SerializeField] private GameObject loginPanel;
-        [SerializeField] private TMP_InputField loginUsernameInput;
+        [SerializeField] private TMP_InputField loginEmailOrUsernameInput;
         [SerializeField] private TMP_InputField loginPasswordInput;
         [SerializeField] private Button loginButton;
         [SerializeField] private Button switchToRegisterButton;
 
-        [Header("Register Form")]
+        [Header("Register Form (Step 1)")]
         [SerializeField] private GameObject registerPanel;
         [SerializeField] private TMP_InputField registerUsernameInput;
         [SerializeField] private TMP_InputField registerEmailInput;
         [SerializeField] private TMP_InputField registerPasswordInput;
-        [SerializeField] private Button registerButton;
-        [SerializeField] private Button switchToLoginButton;
+        [SerializeField] private TMP_InputField registerConfirmPasswordInput;
+        [SerializeField] private Button sendOtpButton;
+        [SerializeField] private Button switchToLoginFromRegisterButton;
+
+        [Header("OTP Form (Step 2)")]
+        [SerializeField] private GameObject otpPanel;
+        [SerializeField] private TMP_InputField otpInput;
+        [SerializeField] private TextMeshProUGUI otpSentToText;
+        [SerializeField] private Button verifyAndRegisterButton;
+        [SerializeField] private Button resendOtpButton;
+        [SerializeField] private Button backFromOtpButton;
 
         [Header("Loading")]
         [SerializeField] private GameObject loadingOverlay;
         [SerializeField] private TextMeshProUGUI loadingText;
+
+        private string _pendingEmail;
+        private string _pendingUsername;
+        private string _pendingPassword;
 
         private void Start()
         {
@@ -50,10 +63,17 @@ namespace Minigames.UI
             if (switchToRegisterButton != null)
                 switchToRegisterButton.onClick.AddListener(ShowRegisterForm);
 
-            if (registerButton != null)
-                registerButton.onClick.AddListener(OnRegisterClicked);
-            if (switchToLoginButton != null)
-                switchToLoginButton.onClick.AddListener(ShowLoginForm);
+            if (sendOtpButton != null)
+                sendOtpButton.onClick.AddListener(OnSendOtpClicked);
+            if (switchToLoginFromRegisterButton != null)
+                switchToLoginFromRegisterButton.onClick.AddListener(ShowLoginForm);
+
+            if (verifyAndRegisterButton != null)
+                verifyAndRegisterButton.onClick.AddListener(OnVerifyOtpClicked);
+            if (resendOtpButton != null)
+                resendOtpButton.onClick.AddListener(OnResendOtpClicked);
+            if (backFromOtpButton != null)
+                backFromOtpButton.onClick.AddListener(ShowRegisterForm);
 
             SetLoading(false);
         }
@@ -76,6 +96,7 @@ namespace Minigames.UI
         private void ShowLoginForm()
         {
             if (registerPanel != null) registerPanel.SetActive(false);
+            if (otpPanel != null) otpPanel.SetActive(false);
             if (loginPanel != null) loginPanel.SetActive(true);
             ClearLoginInputs();
         }
@@ -83,13 +104,25 @@ namespace Minigames.UI
         private void ShowRegisterForm()
         {
             if (loginPanel != null) loginPanel.SetActive(false);
+            if (otpPanel != null) otpPanel.SetActive(false);
             if (registerPanel != null) registerPanel.SetActive(true);
             ClearRegisterInputs();
+            ClearOtpInput();
+        }
+
+        private void ShowOtpForm()
+        {
+            if (loginPanel != null) loginPanel.SetActive(false);
+            if (registerPanel != null) registerPanel.SetActive(false);
+            if (otpPanel != null) otpPanel.SetActive(true);
+            ClearOtpInput();
+            if (otpSentToText != null)
+                otpSentToText.text = $"Enter the code sent to {_pendingEmail}";
         }
 
         private void ClearLoginInputs()
         {
-            if (loginUsernameInput != null) loginUsernameInput.text = "";
+            if (loginEmailOrUsernameInput != null) loginEmailOrUsernameInput.text = "";
             if (loginPasswordInput != null) loginPasswordInput.text = "";
         }
 
@@ -98,6 +131,12 @@ namespace Minigames.UI
             if (registerUsernameInput != null) registerUsernameInput.text = "";
             if (registerEmailInput != null) registerEmailInput.text = "";
             if (registerPasswordInput != null) registerPasswordInput.text = "";
+            if (registerConfirmPasswordInput != null) registerConfirmPasswordInput.text = "";
+        }
+
+        private void ClearOtpInput()
+        {
+            if (otpInput != null) otpInput.text = "";
         }
 
         private void SetLoading(bool loading, string message = "Loading...")
@@ -107,19 +146,27 @@ namespace Minigames.UI
 
             bool interact = !loading;
             if (loginButton != null) loginButton.interactable = interact;
-            if (registerButton != null) registerButton.interactable = interact;
-            if (switchToLoginButton != null) switchToLoginButton.interactable = interact;
+            if (sendOtpButton != null) sendOtpButton.interactable = interact;
+            if (verifyAndRegisterButton != null) verifyAndRegisterButton.interactable = interact;
+            if (resendOtpButton != null) resendOtpButton.interactable = interact;
             if (switchToRegisterButton != null) switchToRegisterButton.interactable = interact;
+            if (switchToLoginFromRegisterButton != null) switchToLoginFromRegisterButton.interactable = interact;
+            if (backFromOtpButton != null) backFromOtpButton.interactable = interact;
+        }
+
+        private static bool IsEmail(string s)
+        {
+            return !string.IsNullOrEmpty(s) && s.Trim().Contains("@");
         }
 
         private void OnLoginClicked()
         {
-            string username = loginUsernameInput != null ? loginUsernameInput.text.Trim() : "";
+            string emailOrUsername = loginEmailOrUsernameInput != null ? loginEmailOrUsernameInput.text.Trim() : "";
             string password = loginPasswordInput != null ? loginPasswordInput.text : "";
 
-            if (string.IsNullOrEmpty(username))
+            if (string.IsNullOrEmpty(emailOrUsername))
             {
-                PopupManager.Instance.ShowError("Login", "Please enter your username.");
+                PopupManager.Instance.ShowError("Login", "Please enter your email or username.");
                 return;
             }
             if (string.IsNullOrEmpty(password))
@@ -128,11 +175,16 @@ namespace Minigames.UI
                 return;
             }
 
+            var request = new PlayerLoginRequest { password = password };
+            if (IsEmail(emailOrUsername))
+                request.email = emailOrUsername;
+            else
+                request.username = emailOrUsername;
+
             SetLoading(true, "Signing in...");
-            var request = new PlayerLoginRequest { username = username, password = password };
             AuthManager.Instance.Login(
                 request,
-                _ => { /* HandleLoginSuccess will hide auth UI */ },
+                _ => { },
                 error =>
                 {
                     SetLoading(false);
@@ -141,11 +193,12 @@ namespace Minigames.UI
             );
         }
 
-        private void OnRegisterClicked()
+        private void OnSendOtpClicked()
         {
             string username = registerUsernameInput != null ? registerUsernameInput.text.Trim() : "";
             string email = registerEmailInput != null ? registerEmailInput.text.Trim() : "";
             string password = registerPasswordInput != null ? registerPasswordInput.text : "";
+            string confirm = registerConfirmPasswordInput != null ? registerConfirmPasswordInput.text : "";
 
             if (string.IsNullOrEmpty(username))
             {
@@ -155,6 +208,11 @@ namespace Minigames.UI
             if (string.IsNullOrEmpty(email))
             {
                 PopupManager.Instance.ShowError("Register", "Please enter your email.");
+                return;
+            }
+            if (!IsEmail(email))
+            {
+                PopupManager.Instance.ShowError("Register", "Please enter a valid email address.");
                 return;
             }
             if (string.IsNullOrEmpty(password))
@@ -167,21 +225,83 @@ namespace Minigames.UI
                 PopupManager.Instance.ShowError("Register", "Password must be at least 6 characters.");
                 return;
             }
-
-            SetLoading(true, "Creating account...");
-            var request = new PlayerRegisterRequest
+            if (password != confirm)
             {
-                username = username,
-                email = email,
-                password = password
-            };
-            AuthManager.Instance.Register(
-                request,
-                _ => { /* HandleLoginSuccess */ },
+                PopupManager.Instance.ShowError("Register", "Password and Confirm Password do not match.");
+                return;
+            }
+
+            _pendingEmail = email;
+            _pendingUsername = username;
+            _pendingPassword = password;
+
+            SetLoading(true, "Sending verification code...");
+            AuthManager.Instance.RequestRegistrationOtp(
+                email,
+                username,
+                () =>
+                {
+                    SetLoading(false);
+                    ShowOtpForm();
+                },
                 error =>
                 {
                     SetLoading(false);
-                    PopupManager.Instance.ShowError("Registration Failed", error);
+                    PopupManager.Instance.ShowError("Send OTP Failed", error);
+                }
+            );
+        }
+
+        private void OnVerifyOtpClicked()
+        {
+            string otp = otpInput != null ? otpInput.text.Trim() : "";
+            if (string.IsNullOrEmpty(otp))
+            {
+                PopupManager.Instance.ShowError("Verify OTP", "Please enter the verification code.");
+                return;
+            }
+
+            var request = new VerifyOtpAndRegisterRequest
+            {
+                email = _pendingEmail,
+                username = _pendingUsername,
+                password = _pendingPassword,
+                otp = otp
+            };
+
+            SetLoading(true, "Creating account...");
+            AuthManager.Instance.VerifyOtpAndRegister(
+                request,
+                _ => { },
+                error =>
+                {
+                    SetLoading(false);
+                    PopupManager.Instance.ShowError("Verification Failed", error);
+                }
+            );
+        }
+
+        private void OnResendOtpClicked()
+        {
+            if (string.IsNullOrEmpty(_pendingEmail) || string.IsNullOrEmpty(_pendingUsername))
+            {
+                ShowRegisterForm();
+                return;
+            }
+
+            SetLoading(true, "Resending code...");
+            AuthManager.Instance.RequestRegistrationOtp(
+                _pendingEmail,
+                _pendingUsername,
+                () =>
+                {
+                    SetLoading(false);
+                    PopupManager.Instance.ShowMessage("OTP Sent", "A new verification code has been sent to your email.");
+                },
+                error =>
+                {
+                    SetLoading(false);
+                    PopupManager.Instance.ShowError("Resend Failed", error);
                 }
             );
         }
@@ -191,6 +311,8 @@ namespace Minigames.UI
             SetLoading(false);
             ClearLoginInputs();
             ClearRegisterInputs();
+            ClearOtpInput();
+            _pendingEmail = _pendingUsername = _pendingPassword = null;
             gameObject.SetActive(false);
         }
 

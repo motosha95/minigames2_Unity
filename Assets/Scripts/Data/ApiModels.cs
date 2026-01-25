@@ -25,7 +25,9 @@ namespace Minigames.Data
     [Serializable]
     public class PlayerLoginRequest
     {
+        /// <summary>Email or username – backend accepts either.</summary>
         public string username;
+        public string email;
         public string password;
     }
 
@@ -34,6 +36,28 @@ namespace Minigames.Data
     {
         public string token;
         public PlayerProfile player;
+    }
+
+    [Serializable]
+    public class RequestRegistrationOtpRequest
+    {
+        public string email;
+        public string username;
+    }
+
+    [Serializable]
+    public class VerifyOtpAndRegisterRequest
+    {
+        public string email;
+        public string username;
+        public string password;
+        public string otp;
+    }
+
+    [Serializable]
+    public class SendOtpResponse
+    {
+        // Empty; backend returns { "success": true, "data": {} } or similar
     }
 
     [Serializable]

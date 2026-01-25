@@ -83,7 +83,8 @@ namespace Minigames.Managers
         }
 
         /// <summary>
-        /// Login with username and password
+        /// Login with email or username and password.
+        /// Set either request.username or request.email; backend accepts either.
         /// </summary>
         public void Login(PlayerLoginRequest request, Action<PlayerProfile> onSuccess, Action<string> onError)
         {
@@ -193,6 +194,48 @@ namespace Minigames.Managers
         public PlayerProfile GetCurrentPlayer()
         {
             return currentPlayer;
+        }
+
+        /// <summary>
+        /// Request OTP for registration. Backend sends OTP to the given email.
+        /// </summary>
+        public void RequestRegistrationOtp(string email, string username, Action onSuccess, Action<string> onError)
+        {
+            var request = new RequestRegistrationOtpRequest { email = email, username = username };
+            ApiClient.Instance.Post<RequestRegistrationOtpRequest, SendOtpResponse>(
+                "/api/App/player/register/send-otp",
+                request,
+                _ => onSuccess?.Invoke(),
+                error =>
+                {
+                    OnAuthError?.Invoke(error);
+                    onError?.Invoke(error);
+                }
+            );
+        }
+
+        /// <summary>
+        /// Verify OTP and complete registration. Returns token and profile on success.
+        /// </summary>
+        public void VerifyOtpAndRegister(VerifyOtpAndRegisterRequest request, Action<PlayerProfile> onSuccess, Action<string> onError)
+        {
+            ApiClient.Instance.Post<VerifyOtpAndRegisterRequest, PlayerLoginResponse>(
+                "/api/App/player/register/verify-otp",
+                request,
+                (response) =>
+                {
+                    authToken = response.data.token;
+                    currentPlayer = response.data.player;
+                    ApiClient.Instance.SetAuthToken(authToken);
+                    OnLoginSuccess?.Invoke(currentPlayer);
+                    onSuccess?.Invoke(currentPlayer);
+                },
+                (error) =>
+                {
+                    OnAuthError?.Invoke(error);
+                    onError?.Invoke(error);
+                }
+            );
         }
     }
 }

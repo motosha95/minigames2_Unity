@@ -10,12 +10,12 @@ All endpoints marked with `[PLAYER]` require authentication via `Authorization: 
 
 ### Player Management
 
-#### Register Player
+#### Login Player (Email or Username)
 ```
-POST /api/App/player/register
+POST /api/App/player/login
 Body: {
-  "username": "string",
-  "email": "string",
+  "username": "string",   // use when user enters username
+  "email": "string",      // use when user enters email; send one or the other
   "password": "string"
 }
 Response: {
@@ -27,12 +27,28 @@ Response: {
 }
 ```
 
-#### Login Player
+#### Request Registration OTP
 ```
-POST /api/App/player/login
+POST /api/App/player/register/send-otp
 Body: {
+  "email": "string",
+  "username": "string"
+}
+Response: {
+  "success": true,
+  "data": {}
+}
+```
+Backend sends OTP to the given email.
+
+#### Verify OTP and Register
+```
+POST /api/App/player/register/verify-otp
+Body: {
+  "email": "string",
   "username": "string",
-  "password": "string"
+  "password": "string",
+  "otp": "string"
 }
 Response: {
   "success": true,
@@ -42,6 +58,18 @@ Response: {
   }
 }
 ```
+
+#### Register Player (legacy, no OTP)
+```
+POST /api/App/player/register
+Body: {
+  "username": "string",
+  "email": "string",
+  "password": "string"
+}
+Response: { "success": true, "data": { "token": "string", "player": { PlayerProfile } } }
+```
+The app uses the OTP flow (send-otp → verify-otp) by default.
 
 #### Get Player Profile [PLAYER]
 ```
