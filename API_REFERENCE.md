@@ -6,6 +6,17 @@ All endpoints are prefixed with `/api/App`
 
 All endpoints marked with `[PLAYER]` require authentication via `Authorization: Bearer {token}` header.
 
+**All API requests require the `X-Tenant-Id` header** to identify the tenant/organization.
+
+Example:
+```
+X-Tenant-Id: c0f9c315-4631-47fa-b00e-4e7b9d1f34fb
+```
+
+The tenant ID can be:
+- Set in **AppInitializer** component (defaultTenantId field)
+- Received from host app via **WebViewBridge.ReceiveTenantId()**
+
 ## Endpoints
 
 ### Player Management
@@ -13,6 +24,7 @@ All endpoints marked with `[PLAYER]` require authentication via `Authorization: 
 #### Login Player (Email or Username)
 ```
 POST /api/App/player/login
+Headers: X-Tenant-Id: {tenant-id}
 Body: {
   "username": "string",   // use when user enters username
   "email": "string",      // use when user enters email; send one or the other
@@ -27,9 +39,26 @@ Response: {
 }
 ```
 
+#### Login Player (Social Media)
+```
+POST /api/App/player/login
+Headers: X-Tenant-Id: {tenant-id}
+Body: {
+  "socialMediaId": "string"   // alternative to username/email/password
+}
+Response: {
+  "success": true,
+  "data": {
+    "token": "string",
+    "player": { PlayerProfile }
+  }
+}
+```
+
 #### Request Registration OTP
 ```
 POST /api/App/player/register/send-otp
+Headers: X-Tenant-Id: {tenant-id}
 Body: {
   "email": "string",
   "username": "string"
@@ -44,6 +73,7 @@ Backend sends OTP to the given email.
 #### Verify OTP and Register
 ```
 POST /api/App/player/register/verify-otp
+Headers: X-Tenant-Id: {tenant-id}
 Body: {
   "email": "string",
   "username": "string",

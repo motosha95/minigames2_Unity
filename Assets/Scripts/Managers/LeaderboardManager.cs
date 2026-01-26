@@ -52,14 +52,39 @@ namespace Minigames.Managers
 
         /// <summary>
         /// Load weekly leaderboard for all players
+        /// Backend returns PagedResult<WeeklyScoreDto>
         /// </summary>
         public void LoadWeeklyLeaderboard(Action<LeaderboardResponse> onSuccess = null, Action<string> onError = null)
         {
-            ApiClient.Instance.Get<LeaderboardResponse>(
+            ApiClient.Instance.Get<PagedResult<WeeklyScoreDto>>(
                 "/api/App/score/weekly",
                 (response) =>
                 {
-                    weeklyLeaderboard = response.data;
+                    // Convert PagedResult<WeeklyScoreDto> to LeaderboardResponse
+                    var leaderboard = new LeaderboardResponse
+                    {
+                        entries = new List<LeaderboardEntry>(),
+                        total = response.data.total,
+                        page = response.data.page,
+                        pageSize = response.data.pageSize
+                    };
+
+                    if (response.data.items != null)
+                    {
+                        for (int i = 0; i < response.data.items.Count; i++)
+                        {
+                            var scoreDto = response.data.items[i];
+                            leaderboard.entries.Add(new LeaderboardEntry
+                            {
+                                playerId = scoreDto.playerId,
+                                playerName = scoreDto.playerName,
+                                score = scoreDto.weeklyScore,
+                                rank = (response.data.page - 1) * response.data.pageSize + i + 1
+                            });
+                        }
+                    }
+
+                    weeklyLeaderboard = leaderboard;
                     OnWeeklyLeaderboardLoaded?.Invoke(weeklyLeaderboard);
                     onSuccess?.Invoke(weeklyLeaderboard);
                 },
@@ -73,16 +98,41 @@ namespace Minigames.Managers
 
         /// <summary>
         /// Load leaderboard for a specific game
+        /// Backend returns PagedResult<GameScoreDto>
         /// </summary>
         public void LoadGameLeaderboard(string gameId, Action<LeaderboardResponse> onSuccess = null, Action<string> onError = null)
         {
-            ApiClient.Instance.Get<LeaderboardResponse>(
+            ApiClient.Instance.Get<PagedResult<GameScoreDto>>(
                 $"/api/App/score/leaderboard/{gameId}",
                 (response) =>
                 {
-                    gameLeaderboards[gameId] = response.data;
-                    OnGameLeaderboardLoaded?.Invoke(response.data);
-                    onSuccess?.Invoke(response.data);
+                    // Convert PagedResult<GameScoreDto> to LeaderboardResponse
+                    var leaderboard = new LeaderboardResponse
+                    {
+                        entries = new List<LeaderboardEntry>(),
+                        total = response.data.total,
+                        page = response.data.page,
+                        pageSize = response.data.pageSize
+                    };
+
+                    if (response.data.items != null)
+                    {
+                        for (int i = 0; i < response.data.items.Count; i++)
+                        {
+                            var scoreDto = response.data.items[i];
+                            leaderboard.entries.Add(new LeaderboardEntry
+                            {
+                                playerId = scoreDto.playerId,
+                                playerName = scoreDto.playerName,
+                                score = scoreDto.totalScore, // or bestScore?
+                                rank = (response.data.page - 1) * response.data.pageSize + i + 1
+                            });
+                        }
+                    }
+
+                    gameLeaderboards[gameId] = leaderboard;
+                    OnGameLeaderboardLoaded?.Invoke(leaderboard);
+                    onSuccess?.Invoke(leaderboard);
                 },
                 (error) =>
                 {
@@ -94,14 +144,15 @@ namespace Minigames.Managers
 
         /// <summary>
         /// Load my total score
+        /// Backend returns PlayerScoreDto
         /// </summary>
         public void LoadMyTotalScore(Action<int> onSuccess = null, Action<string> onError = null)
         {
-            ApiClient.Instance.Get<ScoreResponse>(
+            ApiClient.Instance.Get<PlayerScoreDto>(
                 "/api/App/score/my-total",
                 (response) =>
                 {
-                    myTotalScore = response.data.score;
+                    myTotalScore = response.data.totalScore;
                     OnMyTotalScoreLoaded?.Invoke(myTotalScore);
                     onSuccess?.Invoke(myTotalScore);
                 },
@@ -115,14 +166,15 @@ namespace Minigames.Managers
 
         /// <summary>
         /// Load my weekly score
+        /// Backend returns WeeklyScoreDto
         /// </summary>
         public void LoadMyWeeklyScore(Action<int> onSuccess = null, Action<string> onError = null)
         {
-            ApiClient.Instance.Get<ScoreResponse>(
+            ApiClient.Instance.Get<WeeklyScoreDto>(
                 "/api/App/score/my-weekly",
                 (response) =>
                 {
-                    myWeeklyScore = response.data.score;
+                    myWeeklyScore = response.data.weeklyScore;
                     OnMyWeeklyScoreLoaded?.Invoke(myWeeklyScore);
                     onSuccess?.Invoke(myWeeklyScore);
                 },

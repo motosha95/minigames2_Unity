@@ -31,6 +31,7 @@ namespace Minigames.Core
 
         [Header("API Configuration")]
         [SerializeField] private string baseUrl = "https://api.example.com"; // Set via WebView or config
+        [SerializeField] private string tenantId = ""; // Set via WebView or config
         [SerializeField] private float requestTimeout = 30f;
 
         private string authToken = null;
@@ -52,6 +53,22 @@ namespace Minigames.Core
         public void SetBaseUrl(string url)
         {
             baseUrl = url.TrimEnd('/');
+        }
+
+        /// <summary>
+        /// Set tenant ID for API requests (called from WebView bridge or config)
+        /// </summary>
+        public void SetTenantId(string id)
+        {
+            tenantId = id;
+        }
+
+        /// <summary>
+        /// Get current tenant ID
+        /// </summary>
+        public string GetTenantId()
+        {
+            return tenantId;
         }
 
         /// <summary>
@@ -100,6 +117,7 @@ namespace Minigames.Core
             using (UnityWebRequest request = UnityWebRequest.Get(url))
             {
                 AddAuthHeader(request);
+                AddTenantHeader(request);
                 request.timeout = (int)requestTimeout;
 
                 yield return request.SendWebRequest();
@@ -120,6 +138,7 @@ namespace Minigames.Core
                 request.downloadHandler = new DownloadHandlerBuffer();
                 request.SetRequestHeader("Content-Type", "application/json");
                 AddAuthHeader(request);
+                AddTenantHeader(request);
                 request.timeout = (int)requestTimeout;
 
                 yield return request.SendWebRequest();
@@ -140,6 +159,7 @@ namespace Minigames.Core
                 request.downloadHandler = new DownloadHandlerBuffer();
                 request.SetRequestHeader("Content-Type", "application/json");
                 AddAuthHeader(request);
+                AddTenantHeader(request);
                 request.timeout = (int)requestTimeout;
 
                 yield return request.SendWebRequest();
@@ -153,6 +173,14 @@ namespace Minigames.Core
             if (!string.IsNullOrEmpty(authToken))
             {
                 request.SetRequestHeader("Authorization", $"Bearer {authToken}");
+            }
+        }
+
+        private void AddTenantHeader(UnityWebRequest request)
+        {
+            if (!string.IsNullOrEmpty(tenantId))
+            {
+                request.SetRequestHeader("X-Tenant-Id", tenantId);
             }
         }
 

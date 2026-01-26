@@ -38,6 +38,9 @@
                     case 'baseUrl':
                         window.unityWebViewBridge.sendToUnity('ReceiveBaseUrl', data);
                         break;
+                    case 'tenantId':
+                        window.unityWebViewBridge.sendToUnity('ReceiveTenantId', data);
+                        break;
                     case 'tenantConfig':
                         window.unityWebViewBridge.sendToUnity('ReceiveTenantConfig', data);
                         break;

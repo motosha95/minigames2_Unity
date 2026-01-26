@@ -124,7 +124,11 @@ namespace Minigames.UI
         private void HandleLoginSuccess(PlayerProfile _)
         {
             ShowMainContent();
-            LoadInitialData();
+            // Only load games if not already loaded (AppInitializer may have already triggered load)
+            if (!GameCatalogManager.Instance.AreGamesLoaded())
+            {
+                LoadInitialData();
+            }
         }
 
         private void HandleLogout()

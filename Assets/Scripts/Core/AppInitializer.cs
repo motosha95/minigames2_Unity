@@ -13,6 +13,11 @@ namespace Minigames.Core
     {
         [Header("Configuration")]
         [SerializeField] private string defaultBaseUrl = "https://api.example.com";
+        [SerializeField] private string defaultTenantId = "";
+        
+        [Header("Auto-Login (Dev/Testing)")]
+        [SerializeField] private bool autoLoginOnStart = true;
+        [SerializeField] private string devSocialMediaId = "1";
 
         private void Awake()
         {
@@ -21,13 +26,32 @@ namespace Minigames.Core
 
         private void Start()
         {
-            // Set default base URL (can be overridden by WebViewBridge)
+            // Set default base URL and tenant ID (can be overridden by WebViewBridge)
             ApiClient.Instance.SetBaseUrl(defaultBaseUrl);
+            if (!string.IsNullOrEmpty(defaultTenantId))
+            {
+                ApiClient.Instance.SetTenantId(defaultTenantId);
+            }
 
             // Subscribe to WebView bridge events
             WebViewBridge.Instance.OnBaseUrlReceived += HandleBaseUrlReceived;
             WebViewBridge.Instance.OnAuthTokenReceived += HandleAuthTokenReceived;
             WebViewBridge.Instance.OnTenantConfigReceived += HandleTenantConfigReceived;
+            WebViewBridge.Instance.OnTenantIdReceived += HandleTenantIdReceived;
+            
+            // Subscribe to auth events for auto-login flow
+            AuthManager.Instance.OnLoginSuccess += HandleLoginSuccess;
+            AuthManager.Instance.OnAuthError += HandleAuthError;
+
+            // Auto-login on start if enabled and tenant ID is set
+            if (autoLoginOnStart && !string.IsNullOrEmpty(defaultTenantId) && !string.IsNullOrEmpty(devSocialMediaId))
+            {
+                PerformAutoLogin();
+            }
+            else
+            {
+                Debug.Log("AppInitializer: Auto-login disabled or missing tenant ID/socialMediaId");
+            }
 
             Debug.Log("AppInitializer: App initialized");
         }
@@ -39,6 +63,13 @@ namespace Minigames.Core
                 WebViewBridge.Instance.OnBaseUrlReceived -= HandleBaseUrlReceived;
                 WebViewBridge.Instance.OnAuthTokenReceived -= HandleAuthTokenReceived;
                 WebViewBridge.Instance.OnTenantConfigReceived -= HandleTenantConfigReceived;
+                WebViewBridge.Instance.OnTenantIdReceived -= HandleTenantIdReceived;
+            }
+            
+            if (AuthManager.Instance != null)
+            {
+                AuthManager.Instance.OnLoginSuccess -= HandleLoginSuccess;
+                AuthManager.Instance.OnAuthError -= HandleAuthError;
             }
         }
 
@@ -75,6 +106,62 @@ namespace Minigames.Core
         {
             Debug.Log($"AppInitializer: Tenant config received: {configJson}");
             // TODO: Parse and apply tenant configuration (colors, logos, labels)
+        }
+
+        private void HandleTenantIdReceived(string tenantId)
+        {
+            Debug.Log($"AppInitializer: Tenant ID updated from WebView: {tenantId}");
+            // If auto-login is enabled and we haven't logged in yet, try auto-login
+            if (autoLoginOnStart && !AuthManager.Instance.IsAuthenticated() && !string.IsNullOrEmpty(devSocialMediaId))
+            {
+                PerformAutoLogin();
+            }
+        }
+
+        /// <summary>
+        /// Perform automatic login with social media ID
+        /// </summary>
+        private void PerformAutoLogin()
+        {
+            // Check if tenant ID is set (either default or from WebView)
+            string currentTenantId = ApiClient.Instance.GetTenantId();
+            if (string.IsNullOrEmpty(currentTenantId))
+            {
+                Debug.LogWarning("AppInitializer: Cannot auto-login - tenant ID is not set");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(devSocialMediaId))
+            {
+                Debug.LogWarning("AppInitializer: Cannot auto-login - social media ID is not set");
+                return;
+            }
+
+            Debug.Log($"AppInitializer: Auto-logging in with socialMediaId: {devSocialMediaId}, tenantId: {currentTenantId}");
+            AuthManager.Instance.LoginWithSocialMedia(
+                devSocialMediaId,
+                (profile) =>
+                {
+                    Debug.Log($"AppInitializer: Auto-login successful for player: {profile.username}");
+                    // Games will be fetched automatically by HandleLoginSuccess
+                },
+                (error) =>
+                {
+                    Debug.LogError($"AppInitializer: Auto-login failed: {error}");
+                }
+            );
+        }
+
+        private void HandleLoginSuccess(Minigames.Data.PlayerProfile profile)
+        {
+            Debug.Log($"AppInitializer: Login successful - fetching games");
+            // Fetch games after successful login
+            GameCatalogManager.Instance.LoadGames();
+        }
+
+        private void HandleAuthError(string error)
+        {
+            Debug.LogError($"AppInitializer: Auth error: {error}");
         }
     }
 }

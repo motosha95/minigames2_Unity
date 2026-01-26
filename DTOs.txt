@@ -1,0 +1,112 @@
+REQUEST DTOs
+1. Authentication
+1.1 RegisterTenantPlayerDto
+Username (string, required, 3-100 chars)
+SocialMediaId (string, required)
+CountryCode (string?, optional, max 10 chars)
+1.2 LoginTenantPlayerDto
+SocialMediaId (string, required)
+2. Player Management
+2.1 UpdatePlayerProfileDto
+Username (string?, optional, 3-100 chars)
+CountryCode (string?, optional, max 10 chars)
+Icon (string?, optional, max 64 chars)
+Frame (string?, optional, max 64 chars)
+3. Game Sessions
+3.1 StartGameDto
+GameId (Guid, required)
+GameData (string?, optional)
+3.2 CompleteGameDto
+GameSessionId (Guid, required)
+EncryptedScore (string, required, max 500 chars)
+GameData (string?, optional)
+4. Filter Parameters
+4.1 GameFilterParameters
+Inherits from FilterParameters (includes pagination properties)
+4.2 GameSessionFilterParameters
+MinScore (int?)
+MaxScore (int?)
+StartedFrom (DateTime?)
+StartedTo (DateTime?)
+EndedFrom (DateTime?)
+EndedTo (DateTime?)
+MinDuration (int?)
+MaxDuration (int?)
+GameId (Guid?)
+PlayerId (Guid?)
+Status (string?)
+4.3 ProductFilterParameters
+Inherits from FilterParameters (includes pagination properties)
+
+
+
+
+
+
+RESPONSE DTOs
+5. Authentication Responses
+5.1 TenantPlayerAuthResultDto
+IsSuccess (bool)
+Token (string?)
+Player (PlayerDto?)
+ErrorMessage (string?)
+6. Player Responses
+6.1 PlayerDto
+Username (string)
+SocialMediaId (string)
+CountryCode (string)
+Icon (string)
+Frame (string)
+Score (int)
+LastLoginAt (DateTime?)
+IsActive (bool)
+7. Game Responses
+7.1 GameDto
+Name (string)
+Description (string)
+MaxScore (int)
+TimeLimit (int)
+IsActive (bool)
+Rules (string?)
+GameConfigurations (ICollection)
+7.2 GameSessionDto
+PlayerId (Guid)
+GameId (Guid)
+GameName (string)
+Status (GameStatus enum)
+StartedAt (DateTime)
+EndedAt (DateTime?)
+FinalScore (int)
+Duration (TimeSpan?)
+GameData (string?)
+RejectionReason (string?)
+8. Score Responses
+8.1 PlayerScoreDto
+PlayerId (Guid)
+PlayerName (string)
+TotalScore (int)
+GamesPlayed (int)
+LastGamePlayed (DateTime)
+8.2 WeeklyScoreDto
+PlayerId (Guid)
+PlayerName (string)
+WeeklyScore (int)
+GamesPlayedThisWeek (int)
+WeekStartDate (DateTime)
+WeekEndDate (DateTime)
+8.3 GameScoreDto
+PlayerId (Guid)
+PlayerName (string)
+GameId (Guid)
+GameName (string)
+TotalScore (int)
+GamesPlayed (int)
+BestScore (int)
+9. Store Responses
+9.1 ProductDto
+Used for product listings
+10. Collection Responses
+10.1 PagedResult
+Used for paginated collections of: GameDto, GameSessionDto, ProductDto
+10.2 ApiResponse
+Wraps all responses for standardized API format

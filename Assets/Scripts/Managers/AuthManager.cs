@@ -59,20 +59,37 @@ namespace Minigames.Managers
         }
 
         /// <summary>
-        /// Register a new player
+        /// Register a new player using RegisterTenantPlayerDto (username, socialMediaId, countryCode)
         /// </summary>
         public void Register(PlayerRegisterRequest request, Action<PlayerProfile> onSuccess, Action<string> onError)
         {
-            ApiClient.Instance.Post<PlayerRegisterRequest, PlayerLoginResponse>(
+            // Convert to backend DTO format
+            var registerDto = new RegisterTenantPlayerDto
+            {
+                username = request.username,
+                socialMediaId = request.socialMediaId,
+                countryCode = request.countryCode
+            };
+
+            ApiClient.Instance.Post<RegisterTenantPlayerDto, TenantPlayerAuthResultDto>(
                 "/api/App/player/register",
-                request,
+                registerDto,
                 (response) =>
                 {
-                    authToken = response.data.token;
-                    currentPlayer = response.data.player;
-                    ApiClient.Instance.SetAuthToken(authToken);
-                    OnLoginSuccess?.Invoke(currentPlayer);
-                    onSuccess?.Invoke(currentPlayer);
+                    if (response.data.isSuccess && !string.IsNullOrEmpty(response.data.token) && response.data.player != null)
+                    {
+                        authToken = response.data.token;
+                        currentPlayer = DtoConverter.ToPlayerProfile(response.data.player);
+                        ApiClient.Instance.SetAuthToken(authToken);
+                        OnLoginSuccess?.Invoke(currentPlayer);
+                        onSuccess?.Invoke(currentPlayer);
+                    }
+                    else
+                    {
+                        string error = response.data.errorMessage ?? "Registration failed";
+                        OnAuthError?.Invoke(error);
+                        onError?.Invoke(error);
+                    }
                 },
                 (error) =>
                 {
@@ -83,21 +100,35 @@ namespace Minigames.Managers
         }
 
         /// <summary>
-        /// Login with email or username and password.
-        /// Set either request.username or request.email; backend accepts either.
+        /// Login with social media ID (backend only supports socialMediaId).
         /// </summary>
         public void Login(PlayerLoginRequest request, Action<PlayerProfile> onSuccess, Action<string> onError)
         {
-            ApiClient.Instance.Post<PlayerLoginRequest, PlayerLoginResponse>(
+            // Convert to backend DTO format
+            var loginDto = new LoginTenantPlayerDto
+            {
+                socialMediaId = request.socialMediaId
+            };
+
+            ApiClient.Instance.Post<LoginTenantPlayerDto, TenantPlayerAuthResultDto>(
                 "/api/App/player/login",
-                request,
+                loginDto,
                 (response) =>
                 {
-                    authToken = response.data.token;
-                    currentPlayer = response.data.player;
-                    ApiClient.Instance.SetAuthToken(authToken);
-                    OnLoginSuccess?.Invoke(currentPlayer);
-                    onSuccess?.Invoke(currentPlayer);
+                    if (response.data.isSuccess && !string.IsNullOrEmpty(response.data.token) && response.data.player != null)
+                    {
+                        authToken = response.data.token;
+                        currentPlayer = DtoConverter.ToPlayerProfile(response.data.player);
+                        ApiClient.Instance.SetAuthToken(authToken);
+                        OnLoginSuccess?.Invoke(currentPlayer);
+                        onSuccess?.Invoke(currentPlayer);
+                    }
+                    else
+                    {
+                        string error = response.data.errorMessage ?? "Login failed";
+                        OnAuthError?.Invoke(error);
+                        onError?.Invoke(error);
+                    }
                 },
                 (error) =>
                 {
@@ -105,6 +136,16 @@ namespace Minigames.Managers
                     onError?.Invoke(error);
                 }
             );
+        }
+
+        /// <summary>
+        /// Login with social media ID (alternative to username/email/password).
+        /// Requires tenant ID to be set in ApiClient.
+        /// </summary>
+        public void LoginWithSocialMedia(string socialMediaId, Action<PlayerProfile> onSuccess, Action<string> onError)
+        {
+            var request = new PlayerLoginRequest { socialMediaId = socialMediaId };
+            Login(request, onSuccess, onError);
         }
 
         /// <summary>
@@ -112,11 +153,11 @@ namespace Minigames.Managers
         /// </summary>
         public void FetchProfile(Action<PlayerProfile> onSuccess = null, Action<string> onError = null)
         {
-            ApiClient.Instance.Get<PlayerProfile>(
+            ApiClient.Instance.Get<PlayerDto>(
                 "/api/App/player/profile",
                 (response) =>
                 {
-                    currentPlayer = response.data;
+                    currentPlayer = DtoConverter.ToPlayerProfile(response.data);
                     onSuccess?.Invoke(currentPlayer);
                 },
                 (error) =>
@@ -128,16 +169,25 @@ namespace Minigames.Managers
         }
 
         /// <summary>
-        /// Update player profile
+        /// Update player profile using UpdatePlayerProfileDto (username, countryCode, icon, frame)
         /// </summary>
         public void UpdateProfile(PlayerProfileUpdateRequest request, Action<PlayerProfile> onSuccess, Action<string> onError)
         {
-            ApiClient.Instance.Put<PlayerProfileUpdateRequest, PlayerProfile>(
+            // Convert to backend DTO format
+            var updateDto = new UpdatePlayerProfileDto
+            {
+                username = request.displayName ?? request.username,
+                countryCode = request.countryCode,
+                icon = request.icon,
+                frame = request.frame
+            };
+
+            ApiClient.Instance.Put<UpdatePlayerProfileDto, PlayerDto>(
                 "/api/App/player/profile",
-                request,
+                updateDto,
                 (response) =>
                 {
-                    currentPlayer = response.data;
+                    currentPlayer = DtoConverter.ToPlayerProfile(response.data);
                     onSuccess?.Invoke(currentPlayer);
                 },
                 (error) =>

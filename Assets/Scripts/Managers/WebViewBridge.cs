@@ -31,6 +31,7 @@ namespace Minigames.Managers
         public event Action<string> OnAuthTokenReceived;
         public event Action<string> OnTenantConfigReceived;
         public event Action<string> OnBaseUrlReceived;
+        public event Action<string> OnTenantIdReceived;
 
         private void Awake()
         {
@@ -71,6 +72,16 @@ namespace Minigames.Managers
             Debug.Log($"WebViewBridge: Received base URL: {baseUrl}");
             ApiClient.Instance.SetBaseUrl(baseUrl);
             OnBaseUrlReceived?.Invoke(baseUrl);
+        }
+
+        /// <summary>
+        /// Called from JavaScript when host app provides tenant ID
+        /// </summary>
+        public void ReceiveTenantId(string tenantId)
+        {
+            Debug.Log($"WebViewBridge: Received tenant ID: {tenantId}");
+            ApiClient.Instance.SetTenantId(tenantId);
+            OnTenantIdReceived?.Invoke(tenantId);
         }
 
         // Methods called from Unity to notify host app

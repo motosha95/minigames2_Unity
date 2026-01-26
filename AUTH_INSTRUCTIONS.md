@@ -86,12 +86,14 @@ Authentication supports:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/App/player/login` | Log in with **email or username** and password |
+| `POST` | `/api/App/player/login` | Log in with **email or username** and password, or **social media ID** |
 | `POST` | `/api/App/player/register/send-otp` | Request OTP for registration (sends code to email) |
 | `POST` | `/api/App/player/register/verify-otp` | Verify OTP and complete registration |
 | `GET`  | `/api/App/player/profile` | Get current player profile (requires auth) |
 | `PUT`  | `/api/App/player/profile` | Update profile (requires auth) |
 | `PUT`  | `/api/App/player/deactivate` | Deactivate account (requires auth) |
+
+**Important**: All API requests require the `X-Tenant-Id` header to identify the tenant/organization. The tenant ID must be set before making any API calls.
 
 The legacy **`POST /api/App/player/register`** (register without OTP) is no longer used by the default flow. The app uses the OTP flow above.
 
@@ -99,6 +101,7 @@ All authenticated requests use:
 
 ```
 Authorization: Bearer <token>
+X-Tenant-Id: <tenant-id>
 ```
 
 ### Login Request (Email or Username)
@@ -122,7 +125,8 @@ POST /api/App/player/login
 
 ```json
 POST /api/App/player/register/send-otp
-{
+Headers: X-Tenant-Id: {tenant-id}
+Body: {
   "email": "string",
   "username": "string"
 }
@@ -134,7 +138,8 @@ Backend sends an OTP to `email` (e.g. by email). Response: `{ "success": true, "
 
 ```json
 POST /api/App/player/register/verify-otp
-{
+Headers: X-Tenant-Id: {tenant-id}
+Body: {
   "email": "string",
   "username": "string",
   "password": "string",
@@ -207,7 +212,12 @@ Add a **loading overlay** (panel + “Loading…” **TextMeshPro**) and wire it
 - **Main content**: A parent (e.g. `MainContentRoot`) containing the nav bar and all main panels (Games, Profile, etc.).
 - Assign `authPanel` and `mainContentRoot` in **MainMenuController**.
 
-#### 3. Profile and Logout
+#### 3. Configure Tenant ID
+
+- In **AppInitializer** component, set `defaultTenantId` to your tenant ID (or leave empty if provided by host app).
+- If tenant ID comes from host app, ensure **WebViewBridge** receives it via `ReceiveTenantId()`.
+
+#### 4. Profile and Logout
 
 - Add a **Log out** button in the Profile panel.
 - Assign it to **ProfileController**’s `logoutButton`.
@@ -274,6 +284,7 @@ If the host app can switch users without reloading the WebView:
 
 - Passwords are sent only over HTTPS. Use `https://` for the API base URL.
 - No passwords or tokens are stored on device; token is in memory only.
+- **Tenant ID is required** for all API requests; ensure it's set before making calls.
 - Implement password rules (length, complexity) on the **backend**; the app enforces minimal checks (non‑empty, min length, match confirm) for UX only.
 - OTP should be short‑lived and single‑use. Backend must validate OTP and rate‑limit send/verify.
 - Handle token expiry (e.g. 401) by clearing the token and showing the login screen or notifying the host app.

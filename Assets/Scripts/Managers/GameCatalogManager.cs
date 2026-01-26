@@ -47,19 +47,33 @@ namespace Minigames.Managers
 
         /// <summary>
         /// Fetch available games from API
+        /// Backend returns PagedResult<GameDto>, we convert to GameInfo
         /// </summary>
         public void LoadGames(Action<List<GameInfo>> onSuccess = null, Action<string> onError = null)
         {
-            ApiClient.Instance.Get<GameListResponse>(
+            ApiClient.Instance.Get<PagedResult<GameDto>>(
                 "/api/App/game/available",
                 (response) =>
                 {
-                    availableGames = response.data.games ?? new List<GameInfo>();
+                    availableGames = new List<GameInfo>();
                     gameCache.Clear();
                     
-                    foreach (var game in availableGames)
+                    if (response.data.items != null)
                     {
-                        gameCache[game.id] = game;
+                        // Convert GameDto to GameInfo
+                        // Note: Backend doesn't provide game ID in GameDto, we'll need to extract it from response or use name as ID
+                        for (int i = 0; i < response.data.items.Count; i++)
+                        {
+                            var gameDto = response.data.items[i];
+                            // Use index or name as temporary ID until backend provides proper ID
+                            string gameId = gameDto.name ?? $"game_{i}";
+                            GameInfo gameInfo = DtoConverter.ToGameInfo(gameDto, gameId);
+                            if (gameInfo != null)
+                            {
+                                availableGames.Add(gameInfo);
+                                gameCache[gameId] = gameInfo;
+                            }
+                        }
                     }
 
                     OnGamesLoaded?.Invoke(availableGames);

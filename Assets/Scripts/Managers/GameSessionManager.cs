@@ -52,21 +52,46 @@ namespace Minigames.Managers
         public void StartSession(string gameId, Dictionary<string, object> metadata = null, 
             Action<GameSessionData> onSuccess = null, Action<string> onError = null)
         {
-            var request = new GameSessionStartRequest
+            // Convert metadata dictionary to JSON string for gameData
+            string gameDataJson = null;
+            if (metadata != null && metadata.Count > 0)
+            {
+                try
+                {
+                    gameDataJson = JsonUtility.ToJson(metadata);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"GameSessionManager: Failed to serialize metadata: {e.Message}");
+                }
+            }
+
+            // Use backend DTO format
+            var startDto = new StartGameDto
             {
                 gameId = gameId,
-                metadata = metadata ?? new Dictionary<string, object>()
+                gameData = gameDataJson
             };
 
-            ApiClient.Instance.Post<GameSessionStartRequest, GameSessionData>(
+            ApiClient.Instance.Post<StartGameDto, GameSessionDto>(
                 "/api/App/gameSession/start",
-                request,
+                startDto,
                 (response) =>
                 {
-                    currentSession = response.data;
-                    activeSessions[currentSession.id] = currentSession;
-                    OnSessionStarted?.Invoke(currentSession);
-                    onSuccess?.Invoke(currentSession);
+                    // Convert GameSessionDto to GameSessionData
+                    currentSession = DtoConverter.ToGameSessionData(response.data);
+                    if (currentSession != null)
+                    {
+                        activeSessions[currentSession.id] = currentSession;
+                        OnSessionStarted?.Invoke(currentSession);
+                        onSuccess?.Invoke(currentSession);
+                    }
+                    else
+                    {
+                        string error = "Failed to convert session data";
+                        OnSessionError?.Invoke(error);
+                        onError?.Invoke(error);
+                    }
                 },
                 (error) =>
                 {
@@ -78,6 +103,7 @@ namespace Minigames.Managers
 
         /// <summary>
         /// Complete the current game session with score. Must be called when game ends.
+        /// Score will be encrypted before sending to backend.
         /// </summary>
         public void CompleteSession(int score, Dictionary<string, object> metadata = null,
             Action<GameSessionData> onSuccess = null, Action<string> onError = null)
@@ -90,25 +116,54 @@ namespace Minigames.Managers
                 return;
             }
 
-            var request = new GameSessionCompleteRequest
+            // Convert metadata dictionary to JSON string for gameData
+            string gameDataJson = null;
+            if (metadata != null && metadata.Count > 0)
+            {
+                try
+                {
+                    gameDataJson = JsonUtility.ToJson(metadata);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"GameSessionManager: Failed to serialize metadata: {e.Message}");
+                }
+            }
+
+            // Encrypt score for backend
+            string encryptedScore = ScoreEncryptionHelper.EncryptScore(score);
+
+            // Use backend DTO format
+            var completeDto = new CompleteGameDto
             {
                 gameSessionId = currentSession.id,
-                score = score,
-                metadata = metadata ?? new Dictionary<string, object>()
+                encryptedScore = encryptedScore,
+                gameData = gameDataJson
             };
 
-            ApiClient.Instance.Post<GameSessionCompleteRequest, GameSessionData>(
+            ApiClient.Instance.Post<CompleteGameDto, GameSessionDto>(
                 "/api/App/gameSession/complete",
-                request,
+                completeDto,
                 (response) =>
                 {
-                    currentSession = response.data;
-                    if (activeSessions.ContainsKey(currentSession.id))
+                    // Convert GameSessionDto to GameSessionData
+                    var completedSession = DtoConverter.ToGameSessionData(response.data, currentSession.id);
+                    if (completedSession != null)
                     {
-                        activeSessions.Remove(currentSession.id);
+                        currentSession = completedSession;
+                        if (activeSessions.ContainsKey(currentSession.id))
+                        {
+                            activeSessions.Remove(currentSession.id);
+                        }
+                        OnSessionCompleted?.Invoke(currentSession);
+                        onSuccess?.Invoke(currentSession);
                     }
-                    OnSessionCompleted?.Invoke(currentSession);
-                    onSuccess?.Invoke(currentSession);
+                    else
+                    {
+                        string error = "Failed to convert session data";
+                        OnSessionError?.Invoke(error);
+                        onError?.Invoke(error);
+                    }
                     
                     // Clear current session after completion
                     currentSession = null;
@@ -126,9 +181,13 @@ namespace Minigames.Managers
         /// </summary>
         public void GetSession(string sessionId, Action<GameSessionData> onSuccess, Action<string> onError)
         {
-            ApiClient.Instance.Get<GameSessionData>(
+            ApiClient.Instance.Get<GameSessionDto>(
                 $"/api/App/gameSession/{sessionId}",
-                (response) => onSuccess?.Invoke(response.data),
+                (response) =>
+                {
+                    var sessionData = DtoConverter.ToGameSessionData(response.data, sessionId);
+                    onSuccess?.Invoke(sessionData);
+                },
                 (error) => onError?.Invoke(error)
             );
         }
