@@ -51,9 +51,27 @@ namespace Minigames.Data
         /// <summary>
         /// Convert GameDto to GameInfo for Unity scene loading
         /// </summary>
-        public static GameInfo ToGameInfo(GameDto dto, string gameId)
+        public static GameInfo ToGameInfo(GameDto dto)
         {
             if (dto == null) return null;
+
+            // Extract gameId - prefer id field, then check gameConfigurations, fallback to name (should not happen)
+            string gameId = dto.id;
+            if (string.IsNullOrEmpty(gameId) && dto.gameConfigurations != null)
+            {
+                var idConfig = dto.gameConfigurations.Find(gc => gc.key == "gameId" || gc.key == "GameId" || gc.key == "id" || gc.key == "Id");
+                if (idConfig != null)
+                {
+                    gameId = idConfig.value;
+                }
+            }
+            
+            // If still no gameId, use name as fallback (should log warning)
+            if (string.IsNullOrEmpty(gameId))
+            {
+                UnityEngine.Debug.LogWarning($"DtoConverter: GameDto for '{dto.name}' has no id field or gameId in configurations. Using name as fallback.");
+                gameId = dto.name;
+            }
 
             // Extract sceneName from gameConfigurations if available
             string sceneName = dto.name; // Default to game name
@@ -68,8 +86,8 @@ namespace Minigames.Data
 
             return new GameInfo
             {
-                id = gameId,
-                name = dto.name,
+                id = gameId,              // Use actual gameId (Guid), not game name
+                name = dto.name,           // Game name (display name)
                 description = dto.description,
                 sceneName = sceneName,
                 thumbnailUrl = "", // Extract from gameConfigurations if needed

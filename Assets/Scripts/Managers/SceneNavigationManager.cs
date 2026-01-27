@@ -115,7 +115,7 @@ namespace Minigames.Managers
             }
 
             // Load game scene additively
-            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
             
             while (!asyncLoad.isDone)
             {

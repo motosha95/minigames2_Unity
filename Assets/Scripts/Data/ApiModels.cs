@@ -150,7 +150,8 @@ namespace Minigames.Data
     [Serializable]
     public class GameDto
     {
-        public string name;
+        public string id;                 // Guid as string - game ID from backend
+        public string name;               // Game name (display name)
         public string description;
         public int maxScore;
         public int timeLimit;

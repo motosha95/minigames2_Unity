@@ -61,17 +61,16 @@ namespace Minigames.Managers
                     if (response.data.items != null)
                     {
                         // Convert GameDto to GameInfo
-                        // Note: Backend doesn't provide game ID in GameDto, we'll need to extract it from response or use name as ID
+                        // GameDto should include id field (Guid), or gameId in gameConfigurations
                         for (int i = 0; i < response.data.items.Count; i++)
                         {
                             var gameDto = response.data.items[i];
-                            // Use index or name as temporary ID until backend provides proper ID
-                            string gameId = gameDto.name ?? $"game_{i}";
-                            GameInfo gameInfo = DtoConverter.ToGameInfo(gameDto, gameId);
+                            GameInfo gameInfo = DtoConverter.ToGameInfo(gameDto);
                             if (gameInfo != null)
                             {
                                 availableGames.Add(gameInfo);
-                                gameCache[gameId] = gameInfo;
+                                // Use the actual gameId (Guid) from GameInfo, not the game name
+                                gameCache[gameInfo.id] = gameInfo;
                             }
                         }
                     }

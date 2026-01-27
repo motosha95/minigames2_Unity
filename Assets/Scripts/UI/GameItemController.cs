@@ -34,7 +34,7 @@ namespace Minigames.UI
         {
             gameInfo = game;
             onGameSelected = onSelected;
-
+            Debug.Log(game.name);
             if (gameNameText != null)
                 gameNameText.text = game.name ?? "Unknown Game";
 

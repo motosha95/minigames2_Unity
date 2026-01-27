@@ -228,6 +228,7 @@ namespace Minigames.UI
 
         private void StartGameSession(GameInfo game)
         {
+            Debug.Log($"GameId:{game.id}");
             // Start game session and load game scene
             GameSessionManager.Instance.StartSession(
                 game.id,

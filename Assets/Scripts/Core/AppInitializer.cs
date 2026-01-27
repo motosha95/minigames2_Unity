@@ -17,7 +17,7 @@ namespace Minigames.Core
         
         [Header("Auto-Login (Dev/Testing)")]
         [SerializeField] private bool autoLoginOnStart = true;
-        [SerializeField] private string devSocialMediaId = "1";
+        [SerializeField] private string devSocialMediaId = "2";
 
         private void Awake()
         {
