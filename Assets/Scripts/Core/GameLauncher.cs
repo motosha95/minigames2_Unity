@@ -33,13 +33,13 @@ namespace Minigames.Core
 
             // Find IMinigame component in the scene
             // Try BaseMinigame first (most common)
-            BaseMinigame baseMinigame = FindObjectOfType<BaseMinigame>();
+            BaseMinigame baseMinigame = FindFirstObjectByType<BaseMinigame>();
             IMinigame minigame = baseMinigame;
             
             // If not found, search for any MonoBehaviour that implements IMinigame
             if (minigame == null)
             {
-                MonoBehaviour[] allBehaviours = FindObjectsOfType<MonoBehaviour>();
+                MonoBehaviour[] allBehaviours = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
                 foreach (var behaviour in allBehaviours)
                 {
                     if (behaviour is IMinigame)

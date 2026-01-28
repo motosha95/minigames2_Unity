@@ -27,7 +27,7 @@ This guide explains how games are started after fetching the game list, the comp
    ↓
 9. Session created successfully → SceneNavigationManager.LoadGameScene()
    ↓
-10. Game scene loads additively (Main Scene stays loaded)
+10. Game scene loads (replaces Main Scene)
    ↓
 11. GameLauncher.Start() finds IMinigame component
    ↓
@@ -108,7 +108,7 @@ GameItemPrefab (RectTransform, Image, GameItemController)
 
 **Location:** `Assets/Scenes/YourGameScene.unity`
 
-**Purpose:** Individual game scene that loads additively
+**Purpose:** Individual game scene that replaces Main Scene when loaded
 
 **Required Components:**
 

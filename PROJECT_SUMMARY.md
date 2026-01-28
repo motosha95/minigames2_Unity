@@ -38,7 +38,7 @@ A complete Unity WebGL minigames hub application with the following components:
 
 7. **SceneNavigationManager** - Scene loading and navigation
    - Main scene management
-   - Additive game scene loading
+   - Regular scene loading (non-additive, replaces current scene)
    - Clean scene transitions
 
 8. **WebViewBridge** - JavaScript ↔ Unity communication

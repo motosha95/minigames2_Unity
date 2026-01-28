@@ -34,6 +34,10 @@ namespace Minigames.Managers
         private PlayerProfile currentPlayer;
         private string authToken;
 
+        // PlayerPrefs keys for guest persistence
+        private const string GUEST_SOCIAL_MEDIA_ID_KEY = "GuestSocialMediaId";
+        private const string GUEST_TENANT_ID_KEY = "GuestTenantId";
+
         private void Awake()
         {
             if (_instance != null && _instance != this)
@@ -149,6 +153,105 @@ namespace Minigames.Managers
         }
 
         /// <summary>
+        /// Register a guest player with auto-generated username (guest1, guest2, etc.).
+        /// No request body required - backend generates username automatically.
+        /// Returns token and player profile on success.
+        /// Saves socialMediaId locally for future auto-login.
+        /// </summary>
+        public void RegisterGuest(Action<PlayerProfile> onSuccess, Action<string> onError)
+        {
+            // Guest registration endpoint doesn't require a request body, but we send empty object for compatibility
+            ApiClient.Instance.Post<object, TenantPlayerAuthResultDto>(
+                "/api/App/player/register/guest",
+                new object(),
+                (response) =>
+                {
+                    if (response.data.isSuccess && !string.IsNullOrEmpty(response.data.token) && response.data.player != null)
+                    {
+                        authToken = response.data.token;
+                        currentPlayer = DtoConverter.ToPlayerProfile(response.data.player);
+                        ApiClient.Instance.SetAuthToken(authToken);
+                        
+                        // Save guest info for future auto-login
+                        SaveGuestInfo(currentPlayer.socialMediaId);
+                        
+                        OnLoginSuccess?.Invoke(currentPlayer);
+                        onSuccess?.Invoke(currentPlayer);
+                    }
+                    else
+                    {
+                        string error = response.data.errorMessage ?? "Guest registration failed";
+                        OnAuthError?.Invoke(error);
+                        onError?.Invoke(error);
+                    }
+                },
+                (error) =>
+                {
+                    OnAuthError?.Invoke(error);
+                    onError?.Invoke(error);
+                }
+            );
+        }
+
+        /// <summary>
+        /// Save guest socialMediaId and tenant ID locally for future auto-login
+        /// </summary>
+        private void SaveGuestInfo(string socialMediaId)
+        {
+            if (!string.IsNullOrEmpty(socialMediaId))
+            {
+                PlayerPrefs.SetString(GUEST_SOCIAL_MEDIA_ID_KEY, socialMediaId);
+                string tenantId = ApiClient.Instance.GetTenantId();
+                if (!string.IsNullOrEmpty(tenantId))
+                {
+                    PlayerPrefs.SetString(GUEST_TENANT_ID_KEY, tenantId);
+                }
+                PlayerPrefs.Save();
+                Debug.Log($"AuthManager: Saved guest info - socialMediaId: {socialMediaId}");
+            }
+        }
+
+        /// <summary>
+        /// Get saved guest socialMediaId if available
+        /// </summary>
+        public string GetSavedGuestSocialMediaId()
+        {
+            return PlayerPrefs.GetString(GUEST_SOCIAL_MEDIA_ID_KEY, null);
+        }
+
+        /// <summary>
+        /// Get saved guest tenant ID if available
+        /// </summary>
+        public string GetSavedGuestTenantId()
+        {
+            return PlayerPrefs.GetString(GUEST_TENANT_ID_KEY, null);
+        }
+
+        /// <summary>
+        /// Check if saved guest info exists and matches current tenant
+        /// </summary>
+        public bool HasSavedGuestInfo(string currentTenantId)
+        {
+            string savedSocialMediaId = GetSavedGuestSocialMediaId();
+            string savedTenantId = GetSavedGuestTenantId();
+            
+            return !string.IsNullOrEmpty(savedSocialMediaId) && 
+                   !string.IsNullOrEmpty(savedTenantId) && 
+                   savedTenantId == currentTenantId;
+        }
+
+        /// <summary>
+        /// Clear saved guest info (e.g., on logout or when switching tenants)
+        /// </summary>
+        public void ClearGuestInfo()
+        {
+            PlayerPrefs.DeleteKey(GUEST_SOCIAL_MEDIA_ID_KEY);
+            PlayerPrefs.DeleteKey(GUEST_TENANT_ID_KEY);
+            PlayerPrefs.Save();
+            Debug.Log("AuthManager: Cleared saved guest info");
+        }
+
+        /// <summary>
         /// Fetch current player profile
         /// </summary>
         public void FetchProfile(Action<PlayerProfile> onSuccess = null, Action<string> onError = null)
@@ -221,6 +324,7 @@ namespace Minigames.Managers
 
         /// <summary>
         /// Logout and clear session
+        /// Note: Guest info is kept for auto-login on next app start
         /// </summary>
         public void Logout()
         {
@@ -228,6 +332,15 @@ namespace Minigames.Managers
             currentPlayer = null;
             ApiClient.Instance.ClearAuthToken();
             OnLogout?.Invoke();
+        }
+
+        /// <summary>
+        /// Logout and clear guest info (use when switching tenants or clearing guest data)
+        /// </summary>
+        public void LogoutAndClearGuest()
+        {
+            Logout();
+            ClearGuestInfo();
         }
 
         /// <summary>

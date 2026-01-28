@@ -153,6 +153,7 @@ MonoBehaviour:
   timerText: {fileID: 1021983934}
   endGameButton: {fileID: 1363093626}
   returnButton: {fileID: 1975683460}
+  allowInputBeforeGameStart: 1
 --- !u!4 &160655026
 Transform:
   m_ObjectHideFlags: 0

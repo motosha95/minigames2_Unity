@@ -2,7 +2,7 @@
 
 ## Overview
 
-The app can automatically log in a player on startup using a fixed tenant ID and social media ID. This is useful for development/testing or when the app is embedded in a host app that manages authentication.
+The app can automatically register a guest player on startup using a fixed tenant ID. The backend will auto-generate a username (guest1, guest2, etc.) and return a token. This is useful for development/testing or when the app is embedded in a host app that manages authentication.
 
 ## Configuration
 
@@ -15,9 +15,9 @@ The app can automatically log in a player on startup using a fixed tenant ID and
    - **Default Base Url**: Your API base URL (e.g., `https://minigames2backendtest-a9c0hnftbpg4dyhk.francecentral-01.azurewebsites.net`)
    - **Default Tenant Id**: Your tenant ID (e.g., `c0f9c315-4631-47fa-b00e-4e7b9d1f34fb`)
 
-   **Auto-Login (Dev/Testing):**
+   **Auto-Login (Guest Registration):**
    - **Auto Login On Start**: ✅ Check this to enable auto-login
-   - **Dev Social Media Id**: The social media ID to use for login (e.g., `"1"`)
+   - **Use Guest Registration**: ✅ Check this to use guest registration (recommended)
 
 ### Example Configuration
 
@@ -26,9 +26,9 @@ Configuration:
 ├── Default Base Url: https://minigames2backendtest-a9c0hnftbpg4dyhk.francecentral-01.azurewebsites.net
 └── Default Tenant Id: c0f9c315-4631-47fa-b00e-4e7b9d1f34fb
 
-Auto-Login (Dev/Testing):
+Auto-Login (Guest Registration):
 ├── Auto Login On Start: ✓ (checked)
-└── Dev Social Media Id: 1
+└── Use Guest Registration: ✓ (checked)
 ```
 
 ## Flow
@@ -43,10 +43,10 @@ When the app starts with auto-login enabled:
 
 2. **PerformAutoLogin()**:
    - Verifies tenant ID is set
-   - Calls `AuthManager.LoginWithSocialMedia(devSocialMediaId)`
-   - Sends request: `POST /api/App/player/login` with:
+   - Calls `AuthManager.RegisterGuest()`
+   - Sends request: `POST /api/App/player/register/guest` with:
      - Header: `X-Tenant-Id: {tenant-id}`
-     - Body: `{ "socialMediaId": "1" }`
+     - Body: `{}` (empty - backend auto-generates username)
 
 3. **On Login Success**:
    - **AuthManager** fires `OnLoginSuccess` event
@@ -63,7 +63,7 @@ When the app starts with auto-login enabled:
 To disable auto-login:
 
 1. Uncheck **Auto Login On Start** in **AppInitializer** component
-2. Or set **Dev Social Media Id** to empty string
+2. Or uncheck **Use Guest Registration**
 3. The app will show the login/register UI instead
 
 ## WebView Override
@@ -82,13 +82,28 @@ When auto-login runs, it makes this request:
 
 ```bash
 curl -X 'POST' \
-  'https://minigames2backendtest-a9c0hnftbpg4dyhk.francecentral-01.azurewebsites.net/api/App/player/login' \
+  'https://minigames2backendtest-a9c0hnftbpg4dyhk.francecentral-01.azurewebsites.net/api/App/player/register/guest' \
   -H 'accept: text/plain' \
   -H 'X-Tenant-Id: c0f9c315-4631-47fa-b00e-4e7b9d1f34fb' \
   -H 'Content-Type: application/json' \
-  -d '{
-    "socialMediaId": "1"
-  }'
+  -d '{}'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "isSuccess": true,
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "player": {
+      "username": "guest1",
+      "socialMediaId": "...",
+      "score": 0,
+      "isActive": true
+    }
+  }
+}
 ```
 
 ## Error Handling
@@ -101,9 +116,9 @@ If auto-login fails:
 
 Common errors:
 - **Tenant ID not set**: Check **Default Tenant Id** in AppInitializer
-- **Social Media ID not set**: Check **Dev Social Media Id** in AppInitializer
 - **Network error**: Check base URL and network connectivity
-- **401 Unauthorized**: Invalid social media ID or tenant ID
+- **401 Unauthorized**: Invalid tenant ID
+- **Guest registration failed**: Check backend is running and tenant ID is valid
 
 ## Production Considerations
 
@@ -130,9 +145,9 @@ Auto-login enabled? ──No──→ Show Login UI
   ↓ Yes
 PerformAutoLogin()
   ↓
-AuthManager.LoginWithSocialMedia()
+AuthManager.RegisterGuest()
   ↓
-POST /api/App/player/login
+POST /api/App/player/register/guest
   ↓
 Success ──→ OnLoginSuccess Event
   ↓
@@ -145,7 +160,9 @@ Games Loaded → Display Games List
 ## Notes
 
 - Tenant ID is required for all API requests
-- Social media login uses `socialMediaId` instead of username/email/password
-- Games are fetched automatically after successful login
+- Guest registration auto-generates username (guest1, guest2, etc.) on backend
+- No user input required - fully automatic registration
+- Games are fetched automatically after successful guest registration
 - If games are already loaded, duplicate fetch is prevented
 - Auto-login can be overridden by WebView bridge (token from host app)
+- Each app start creates a new guest user (or backend may reuse existing guest)

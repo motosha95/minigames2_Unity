@@ -69,11 +69,15 @@ namespace Minigames.Games
             if (!isGameActive) return;
 
             // Simple score increment on spacebar
-            if ( Input.GetKeyDown(KeyCode.Space))
+            // Note: Using legacy Input system for simplicity in sample game
+            // Suppress warning about new Input System package
+            #pragma warning disable 0618
+            if (Input.GetKeyDown(KeyCode.Space))
             {
                 currentScore += 10;
                 UpdateScoreDisplay();
             }
+            #pragma warning restore 0618
         }
 
         private void UpdateScoreDisplay()

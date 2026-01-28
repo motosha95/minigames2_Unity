@@ -45,7 +45,7 @@ Assets/
 
 ### Architecture
 - **Main Scene**: Persistent scene containing app shell, menus, and navigation
-- **Game Scenes**: Individual scenes for each minigame, loaded additively
+- **Game Scenes**: Individual scenes for each minigame, loaded normally (replaces current scene)
 - **Manager Pattern**: Single-responsibility managers for different systems
 - **Event-Driven**: Managers communicate via events/callbacks
 
@@ -120,11 +120,11 @@ See **[AUTH_INSTRUCTIONS.md](AUTH_INSTRUCTIONS.md)** for user steps, developer s
 ### Starting a Game
 1. User selects a game from the games list
 2. `MainMenuController` calls `GameSessionManager.StartSession()`
-3. On success, loads the game scene additively
+3. On success, loads the game scene (replaces Main Scene)
 4. Game scene initializes with session data
 5. Game plays and ends
 6. Game calls `EndGame()` which completes the session
-7. Returns to Main Scene
+7. Returns to Main Scene (replaces game scene)
 
 ### WebView Integration
 The host mobile app should:
@@ -189,8 +189,8 @@ public class MyGame : BaseMinigame
 - All managers are singletons and persist across scenes
 - Auth token is stored only in memory (not persisted)
 - Games should not directly call APIs - use managers instead
-- Main Scene should not be destroyed unless explicitly required
-- Game scenes are loaded additively and can be unloaded cleanly
+- Scenes are loaded normally (non-additive) - each scene replaces the previous one
+- Game scenes replace Main Scene when loaded, and Main Scene replaces game scene when returning
 
 ## License
 
