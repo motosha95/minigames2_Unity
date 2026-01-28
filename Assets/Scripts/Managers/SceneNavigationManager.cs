@@ -7,7 +7,7 @@ namespace Minigames.Managers
 {
     /// <summary>
     /// Manages scene navigation and loading.
-    /// Handles transitions between Main Scene and Game Scenes.
+    /// Handles transitions between Main Scene and Game Scenes using regular scene loading (non-additive).
     /// </summary>
     public class SceneNavigationManager : MonoBehaviour
     {
@@ -29,10 +29,9 @@ namespace Minigames.Managers
         // Events
         public event Action<string> OnSceneLoading;
         public event Action<string> OnSceneLoaded;
-        public event Action<string> OnSceneUnloading;
 
         private const string MAIN_SCENE_NAME = "MainScene";
-        private string currentGameScene = null;
+        private string currentScene = null;
 
         private void Awake()
         {
@@ -46,22 +45,15 @@ namespace Minigames.Managers
         }
 
         /// <summary>
-        /// Load the main scene (hub)
+        /// Load the main scene (hub). Replaces current scene.
         /// </summary>
         public void LoadMainScene(Action onComplete = null)
         {
-            if (currentGameScene != null)
-            {
-                StartCoroutine(UnloadGameSceneThenLoadMain(onComplete));
-            }
-            else
-            {
-                StartCoroutine(LoadSceneCoroutine(MAIN_SCENE_NAME, onComplete));
-            }
+            StartCoroutine(LoadSceneCoroutine(MAIN_SCENE_NAME, onComplete));
         }
 
         /// <summary>
-        /// Load a game scene additively (keeps Main Scene loaded)
+        /// Load a game scene. Replaces current scene.
         /// </summary>
         public void LoadGameScene(string sceneName, Action onComplete = null)
         {
@@ -72,49 +64,22 @@ namespace Minigames.Managers
                 return;
             }
 
-            StartCoroutine(LoadGameSceneCoroutine(sceneName, onComplete));
+            StartCoroutine(LoadSceneCoroutine(sceneName, onComplete));
         }
 
         /// <summary>
-        /// Unload current game scene and return to main scene
+        /// Return to main scene (replaces current scene).
         /// </summary>
         public void UnloadGameScene(Action onComplete = null)
         {
-            if (string.IsNullOrEmpty(currentGameScene))
-            {
-                onComplete?.Invoke();
-                return;
-            }
-
-            StartCoroutine(UnloadGameSceneCoroutine(currentGameScene, onComplete));
+            LoadMainScene(onComplete);
         }
 
         private IEnumerator LoadSceneCoroutine(string sceneName, Action onComplete)
         {
             OnSceneLoading?.Invoke(sceneName);
             
-            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
-            
-            while (!asyncLoad.isDone)
-            {
-                yield return null;
-            }
-
-            OnSceneLoaded?.Invoke(sceneName);
-            onComplete?.Invoke();
-        }
-
-        private IEnumerator LoadGameSceneCoroutine(string sceneName, Action onComplete)
-        {
-            OnSceneLoading?.Invoke(sceneName);
-
-            // Ensure Main Scene is loaded first
-            if (!SceneManager.GetSceneByName(MAIN_SCENE_NAME).isLoaded)
-            {
-                yield return StartCoroutine(LoadSceneCoroutine(MAIN_SCENE_NAME, null));
-            }
-
-            // Load game scene additively
+            // Load scene in single mode (replaces current scene)
             AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
             
             while (!asyncLoad.isDone)
@@ -122,39 +87,27 @@ namespace Minigames.Managers
                 yield return null;
             }
 
-            currentGameScene = sceneName;
+            // Update current scene tracking
+            currentScene = sceneName;
+            
             OnSceneLoaded?.Invoke(sceneName);
             onComplete?.Invoke();
         }
 
-        private IEnumerator UnloadGameSceneCoroutine(string sceneName, Action onComplete)
+        /// <summary>
+        /// Get current scene name
+        /// </summary>
+        public string GetCurrentScene()
         {
-            OnSceneUnloading?.Invoke(sceneName);
-
-            AsyncOperation asyncUnload = SceneManager.UnloadSceneAsync(sceneName);
-            
-            while (!asyncUnload.isDone)
-            {
-                yield return null;
-            }
-
-            currentGameScene = null;
-            onComplete?.Invoke();
-        }
-
-        private IEnumerator UnloadGameSceneThenLoadMain(Action onComplete)
-        {
-            yield return StartCoroutine(UnloadGameSceneCoroutine(currentGameScene, null));
-            yield return StartCoroutine(LoadSceneCoroutine(MAIN_SCENE_NAME, null));
-            onComplete?.Invoke();
+            return currentScene;
         }
 
         /// <summary>
-        /// Get current game scene name (null if in main scene)
+        /// Check if currently in main scene
         /// </summary>
-        public string GetCurrentGameScene()
+        public bool IsMainScene()
         {
-            return currentGameScene;
+            return currentScene == MAIN_SCENE_NAME;
         }
 
         /// <summary>
@@ -162,7 +115,15 @@ namespace Minigames.Managers
         /// </summary>
         public bool IsGameSceneLoaded()
         {
-            return !string.IsNullOrEmpty(currentGameScene);
+            return !string.IsNullOrEmpty(currentScene) && currentScene != MAIN_SCENE_NAME;
+        }
+
+        /// <summary>
+        /// Get current game scene name (null if in main scene)
+        /// </summary>
+        public string GetCurrentGameScene()
+        {
+            return IsGameSceneLoaded() ? currentScene : null;
         }
     }
 }

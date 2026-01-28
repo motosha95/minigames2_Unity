@@ -1,6 +1,7 @@
 using UnityEngine;
 using Minigames.Managers;
 using Minigames.UI;
+using Minigames.Core;
 
 namespace Minigames.Core
 {
@@ -14,6 +15,7 @@ namespace Minigames.Core
         [Header("Configuration")]
         [SerializeField] private string defaultBaseUrl = "https://api.example.com";
         [SerializeField] private string defaultTenantId = "";
+        [SerializeField] private string defaultEncryptionKey = ""; // Optional: Set encryption key for development/testing
         
         [Header("Auto-Login (Dev/Testing)")]
         [SerializeField] private bool autoLoginOnStart = true;
@@ -33,11 +35,18 @@ namespace Minigames.Core
                 ApiClient.Instance.SetTenantId(defaultTenantId);
             }
 
+            // Set encryption key if provided (can be overridden by WebViewBridge)
+            if (!string.IsNullOrEmpty(defaultEncryptionKey))
+            {
+                ScoreEncryptionHelper.SetEncryptionKey(defaultEncryptionKey);
+            }
+
             // Subscribe to WebView bridge events
             WebViewBridge.Instance.OnBaseUrlReceived += HandleBaseUrlReceived;
             WebViewBridge.Instance.OnAuthTokenReceived += HandleAuthTokenReceived;
             WebViewBridge.Instance.OnTenantConfigReceived += HandleTenantConfigReceived;
             WebViewBridge.Instance.OnTenantIdReceived += HandleTenantIdReceived;
+            WebViewBridge.Instance.OnEncryptionKeyReceived += HandleEncryptionKeyReceived;
             
             // Subscribe to auth events for auto-login flow
             AuthManager.Instance.OnLoginSuccess += HandleLoginSuccess;
@@ -64,6 +73,7 @@ namespace Minigames.Core
                 WebViewBridge.Instance.OnAuthTokenReceived -= HandleAuthTokenReceived;
                 WebViewBridge.Instance.OnTenantConfigReceived -= HandleTenantConfigReceived;
                 WebViewBridge.Instance.OnTenantIdReceived -= HandleTenantIdReceived;
+                WebViewBridge.Instance.OnEncryptionKeyReceived -= HandleEncryptionKeyReceived;
             }
             
             if (AuthManager.Instance != null)
@@ -116,6 +126,12 @@ namespace Minigames.Core
             {
                 PerformAutoLogin();
             }
+        }
+
+        private void HandleEncryptionKeyReceived(string encryptionKey)
+        {
+            Debug.Log("AppInitializer: Encryption key received from WebView");
+            // Encryption key is already set in ScoreEncryptionHelper, just log
         }
 
         /// <summary>

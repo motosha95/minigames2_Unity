@@ -32,6 +32,7 @@ namespace Minigames.Managers
         public event Action<string> OnTenantConfigReceived;
         public event Action<string> OnBaseUrlReceived;
         public event Action<string> OnTenantIdReceived;
+        public event Action<string> OnEncryptionKeyReceived;
 
         private void Awake()
         {
@@ -82,6 +83,16 @@ namespace Minigames.Managers
             Debug.Log($"WebViewBridge: Received tenant ID: {tenantId}");
             ApiClient.Instance.SetTenantId(tenantId);
             OnTenantIdReceived?.Invoke(tenantId);
+        }
+
+        /// <summary>
+        /// Called from JavaScript when host app provides encryption key
+        /// </summary>
+        public void ReceiveEncryptionKey(string encryptionKey)
+        {
+            Debug.Log("WebViewBridge: Received encryption key");
+            ScoreEncryptionHelper.SetEncryptionKey(encryptionKey);
+            OnEncryptionKeyReceived?.Invoke(encryptionKey);
         }
 
         // Methods called from Unity to notify host app

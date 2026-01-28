@@ -20905,7 +20905,7 @@ MonoBehaviour:
   defaultBaseUrl: https://minigames2backendtest-a9c0hnftbpg4dyhk.francecentral-01.azurewebsites.net
   defaultTenantId: c0f9c315-4631-47fa-b00e-4e7b9d1f34fb
   autoLoginOnStart: 1
-  devSocialMediaId: 1
+  devSocialMediaId: 2
 --- !u!4 &1497437110
 Transform:
   m_ObjectHideFlags: 0

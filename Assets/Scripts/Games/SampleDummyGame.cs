@@ -69,7 +69,7 @@ namespace Minigames.Games
             if (!isGameActive) return;
 
             // Simple score increment on spacebar
-            if (Input.GetKeyDown(KeyCode.Space))
+            if ( Input.GetKeyDown(KeyCode.Space))
             {
                 currentScore += 10;
                 UpdateScoreDisplay();
