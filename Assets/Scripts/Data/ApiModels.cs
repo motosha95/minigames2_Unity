@@ -41,12 +41,14 @@ namespace Minigames.Data
     [Serializable]
     public class PlayerDto
     {
+        public string id;              // Guid
         public string username;
         public string socialMediaId;
         public string countryCode;
         public string icon;
         public string frame;
         public int score;
+        public int availableKeys;     // Keys balance from backend (availableKeys)
         public DateTime? lastLoginAt;
         public bool isActive;
     }
@@ -81,6 +83,7 @@ namespace Minigames.Data
         public string displayName;     // Maps to username
         public int totalScore;
         public int weeklyScore;
+        public int keysBalance;        // Keys balance
         public Dictionary<string, object> metadata;
         
         // Additional fields from PlayerDto

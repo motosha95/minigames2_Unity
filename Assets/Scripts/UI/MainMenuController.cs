@@ -23,8 +23,6 @@ namespace Minigames.UI
         [SerializeField] private GameObject leaderboardsPanel;
         [SerializeField] private GameObject marketplacePanel;
         [SerializeField] private GameObject questsPanel;
-        [SerializeField] private GameObject loadingPanel;
-        [SerializeField] private GameObject errorPanel;
 
         [Header("Navigation Buttons")]
         [SerializeField] private Button gamesButton;
@@ -37,8 +35,9 @@ namespace Minigames.UI
         [SerializeField] private Transform gamesListContainer;
         [SerializeField] private GameObject gameItemPrefab;
 
-        [Header("Error Display")]
-        [SerializeField] private TextMeshProUGUI errorText;
+        [Header("User Info Display")]
+        [SerializeField] private TextMeshProUGUI usernameText;
+        [SerializeField] private TextMeshProUGUI keysBalanceText;
 
         private List<GameInfo> availableGames = new List<GameInfo>();
 
@@ -79,6 +78,9 @@ namespace Minigames.UI
             GameCatalogManager.Instance.OnGamesLoadError += HandleGamesLoadError;
             AuthManager.Instance.OnLoginSuccess += HandleLoginSuccess;
             AuthManager.Instance.OnLogout += HandleLogout;
+            PlayerProfileManager.Instance.OnProfileUpdated += HandleProfileUpdated;
+            GameSessionManager.Instance.OnSessionStarted += HandleSessionStarted;
+            GameSessionManager.Instance.OnSessionCompleted += HandleSessionCompleted;
         }
 
         private void UnsubscribeFromEvents()
@@ -93,6 +95,15 @@ namespace Minigames.UI
                 AuthManager.Instance.OnLoginSuccess -= HandleLoginSuccess;
                 AuthManager.Instance.OnLogout -= HandleLogout;
             }
+            if (PlayerProfileManager.Instance != null)
+            {
+                PlayerProfileManager.Instance.OnProfileUpdated -= HandleProfileUpdated;
+            }
+            if (GameSessionManager.Instance != null)
+            {
+                GameSessionManager.Instance.OnSessionStarted -= HandleSessionStarted;
+                GameSessionManager.Instance.OnSessionCompleted -= HandleSessionCompleted;
+            }
         }
 
         private void RefreshAuthState()
@@ -100,11 +111,13 @@ namespace Minigames.UI
             if (AuthManager.Instance.IsAuthenticated())
             {
                 ShowMainContent();
+                UpdateUserInfo();
                 LoadInitialData();
             }
             else
             {
                 ShowAuthPanel();
+                ClearUserInfo();
             }
         }
 
@@ -121,9 +134,10 @@ namespace Minigames.UI
             ShowPanel(gamesPanel);
         }
 
-        private void HandleLoginSuccess(PlayerProfile _)
+        private void HandleLoginSuccess(PlayerProfile profile)
         {
             ShowMainContent();
+            UpdateUserInfo(profile); // Use the profile passed directly
             // Only load games if not already loaded (AppInitializer may have already triggered load)
             if (!GameCatalogManager.Instance.AreGamesLoaded())
             {
@@ -134,11 +148,63 @@ namespace Minigames.UI
         private void HandleLogout()
         {
             ShowAuthPanel();
+            ClearUserInfo();
+        }
+
+        private void HandleProfileUpdated(PlayerProfile profile)
+        {
+            UpdateUserInfo();
+        }
+
+        private void HandleSessionStarted(GameSessionData session)
+        {
+            // Refresh profile to get updated keys balance when game session starts
+            PlayerProfileManager.Instance.RefreshProfile();
+        }
+
+        private void HandleSessionCompleted(GameSessionData session)
+        {
+            // Refresh profile to get updated keys balance after game session completes
+            PlayerProfileManager.Instance.RefreshProfile();
+        }
+
+        private void UpdateUserInfo(PlayerProfile profile = null)
+        {
+            // Use provided profile or get from PlayerProfileManager
+            if (profile == null)
+            {
+                profile = PlayerProfileManager.Instance.GetProfile();
+            }
+
+            if (profile != null)
+            {
+                Debug.Log($"MainMenuController: Updating user info - username: {profile.username}, keysBalance: {profile.keysBalance}");
+                
+                if (usernameText != null)
+                    usernameText.text = profile.username ?? profile.displayName ?? "Unknown";
+
+                if (keysBalanceText != null)
+                    keysBalanceText.text = $"{profile.keysBalance}";
+            }
+            else
+            {
+                Debug.LogWarning("MainMenuController: UpdateUserInfo called but profile is null");
+                ClearUserInfo();
+            }
+        }
+
+        private void ClearUserInfo()
+        {
+            if (usernameText != null)
+                usernameText.text = "";
+
+            if (keysBalanceText != null)
+                keysBalanceText.text = "";
         }
 
         private void LoadInitialData()
         {
-            ShowLoading(true);
+            // Games will load asynchronously - no need for loading indicator
             GameCatalogManager.Instance.LoadGames();
         }
 
@@ -155,28 +221,19 @@ namespace Minigames.UI
             if (panel != null) panel.SetActive(true);
         }
 
-        private void ShowLoading(bool show)
-        {
-            if (loadingPanel != null)
-                loadingPanel.SetActive(show);
-        }
-
         private void ShowError(string message)
         {
-            // Use PopupManager for errors instead of inline error panel
             PopupManager.Instance.ShowError("Error", message);
         }
 
         private void HandleGamesLoaded(List<GameInfo> games)
         {
             availableGames = games;
-            ShowLoading(false);
             PopulateGamesList();
         }
 
         private void HandleGamesLoadError(string error)
         {
-            ShowLoading(false);
             ShowError($"Failed to load games: {error}");
         }
 

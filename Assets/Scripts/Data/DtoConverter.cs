@@ -16,14 +16,15 @@ namespace Minigames.Data
         {
             if (dto == null) return null;
 
-            return new PlayerProfile
+            var profile = new PlayerProfile
             {
-                id = dto.socialMediaId, // Use socialMediaId as ID
+                id = dto.id ?? dto.socialMediaId, // Use id (Guid) if available, fallback to socialMediaId
                 username = dto.username,
                 email = "", // Not in backend DTO
                 displayName = dto.username,
                 totalScore = dto.score,
                 weeklyScore = 0, // Not in PlayerDto, will be fetched separately
+                keysBalance = dto.availableKeys, // Map availableKeys to keysBalance
                 socialMediaId = dto.socialMediaId,
                 countryCode = dto.countryCode,
                 icon = dto.icon,
@@ -32,6 +33,10 @@ namespace Minigames.Data
                 isActive = dto.isActive,
                 metadata = new Dictionary<string, object>()
             };
+
+            UnityEngine.Debug.Log($"DtoConverter: Converted PlayerDto - availableKeys: {dto.availableKeys}, keysBalance: {profile.keysBalance}, username: {profile.username}");
+            
+            return profile;
         }
 
         /// <summary>

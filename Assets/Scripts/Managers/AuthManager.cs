@@ -121,8 +121,10 @@ namespace Minigames.Managers
                 {
                     if (response.data.isSuccess && !string.IsNullOrEmpty(response.data.token) && response.data.player != null)
                     {
+                        Debug.Log($"AuthManager: Login response received - player.availableKeys: {response.data.player.availableKeys}");
                         authToken = response.data.token;
                         currentPlayer = DtoConverter.ToPlayerProfile(response.data.player);
+                        Debug.Log($"AuthManager: After conversion - currentPlayer.keysBalance: {currentPlayer?.keysBalance}");
                         ApiClient.Instance.SetAuthToken(authToken);
                         OnLoginSuccess?.Invoke(currentPlayer);
                         onSuccess?.Invoke(currentPlayer);
