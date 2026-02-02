@@ -9967,6 +9967,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 664472446}
+  - component: {fileID: 664472447}
   m_Layer: 5
   m_Name: ProfileTap
   m_TagString: Untagged
@@ -9995,6 +9996,37 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &664472447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 664472445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72c7ac79d8a34384dbebfde003276aad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  usernameText: {fileID: 0}
+  displayNameText: {fileID: 0}
+  countryCodeText: {fileID: 0}
+  scoreText: {fileID: 0}
+  totalScoreText: {fileID: 0}
+  weeklyScoreText: {fileID: 0}
+  availableKeysText: {fileID: 0}
+  lastLoginAtText: {fileID: 0}
+  isActiveText: {fileID: 0}
+  iconImage: {fileID: 0}
+  frameImage: {fileID: 0}
+  displayNameInput: {fileID: 0}
+  usernameInput: {fileID: 0}
+  countryCodeInput: {fileID: 0}
+  updateProfileButton: {fileID: 0}
+  updateDisplayNameButton: {fileID: 0}
+  refreshButton: {fileID: 0}
+  logoutButton: {fileID: 0}
+  loadingIndicator: {fileID: 0}
 --- !u!1 &677841630
 GameObject:
   m_ObjectHideFlags: 0
