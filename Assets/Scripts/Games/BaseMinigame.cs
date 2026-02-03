@@ -88,11 +88,7 @@ namespace Minigames.Games
         protected virtual void OnSessionCompleted(GameSessionData session)
         {
             Debug.Log($"BaseMinigame: Session {session.id} completed successfully");
-            // Return to main scene
-            SceneNavigationManager.Instance.UnloadGameScene(() =>
-            {
-                Debug.Log("BaseMinigame: Returned to main scene");
-            });
+            ReturnToMainSceneInternal(() => Debug.Log("BaseMinigame: Returned to main scene"));
         }
 
         /// <summary>
@@ -101,11 +97,7 @@ namespace Minigames.Games
         protected virtual void OnSessionError(string error)
         {
             Debug.LogError($"BaseMinigame: Session completion failed: {error}");
-            // Still return to main scene even on error
-            SceneNavigationManager.Instance.UnloadGameScene(() =>
-            {
-                Debug.Log("BaseMinigame: Returned to main scene after error");
-            });
+            ReturnToMainSceneInternal(() => Debug.Log("BaseMinigame: Returned to main scene after error"));
         }
 
         /// <summary>
@@ -114,7 +106,19 @@ namespace Minigames.Games
         protected virtual void ReturnToMainScene()
         {
             GameSessionManager.Instance.AbandonCurrentSession();
-            SceneNavigationManager.Instance.UnloadGameScene();
+            ReturnToMainSceneInternal(null);
+        }
+
+        private static void ReturnToMainSceneInternal(System.Action onComplete)
+        {
+            if (MiniGameLoader.Instance != null && MiniGameLoader.Instance.HasLoadedScene)
+            {
+                MiniGameLoader.Instance.UnloadCurrentMiniGame(() => onComplete?.Invoke());
+            }
+            else
+            {
+                SceneNavigationManager.Instance.UnloadGameScene(() => onComplete?.Invoke());
+            }
         }
     }
 }

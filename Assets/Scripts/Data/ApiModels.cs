@@ -177,6 +177,7 @@ namespace Minigames.Data
         public string name;
         public string description;
         public string sceneName;       // Not in backend, used for Unity scene loading
+        public string addressableKey;  // Not in backend, Addressables key (e.g. "MiniGame_Basketball"). If null, derived as "MiniGame_" + sceneName
         public string thumbnailUrl;    // Not in backend, optional UI field
         public bool isActive;
         public int maxScore;

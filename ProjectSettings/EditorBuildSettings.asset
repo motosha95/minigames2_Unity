@@ -11,9 +11,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Scenes/MainScene.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
-  - enabled: 1
+  - enabled: 0
     path: Assets/_Scenes/Games/Basketball.unity
     guid: 74382a8a55809f64cb6c8fd46c69d2cf
   m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: bc8d3344be1011342a4c29160645750d, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

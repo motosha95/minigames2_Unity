@@ -80,12 +80,18 @@ namespace Minigames.Data
 
             // Extract sceneName from gameConfigurations if available
             string sceneName = dto.name; // Default to game name
+            string addressableKey = null;
             if (dto.gameConfigurations != null)
             {
                 var sceneConfig = dto.gameConfigurations.Find(gc => gc.key == "sceneName" || gc.key == "SceneName");
                 if (sceneConfig != null)
                 {
                     sceneName = sceneConfig.value;
+                }
+                var addressableConfig = dto.gameConfigurations.Find(gc => gc.key == "addressableKey" || gc.key == "AddressableKey");
+                if (addressableConfig != null)
+                {
+                    addressableKey = addressableConfig.value;
                 }
             }
 
@@ -95,6 +101,7 @@ namespace Minigames.Data
                 name = dto.name,           // Game name (display name)
                 description = dto.description,
                 sceneName = sceneName,
+                addressableKey = addressableKey,
                 thumbnailUrl = "", // Extract from gameConfigurations if needed
                 isActive = dto.isActive,
                 maxScore = dto.maxScore,

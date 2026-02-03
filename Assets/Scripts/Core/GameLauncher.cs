@@ -27,7 +27,7 @@ namespace Minigames.Core
             if (session == null)
             {
                 Debug.LogError("GameLauncher: No active session found. Returning to main scene.");
-                SceneNavigationManager.Instance.UnloadGameScene();
+                ReturnToMainScene();
                 yield break;
             }
 
@@ -53,15 +53,27 @@ namespace Minigames.Core
             if (minigame == null)
             {
                 Debug.LogError("GameLauncher: No IMinigame component found in scene. Returning to main scene.");
-                SceneNavigationManager.Instance.UnloadGameScene();
+                ReturnToMainScene();
                 yield break;
             }
 
             // Initialize and start the game
             minigame.Initialize(session);
             minigame.StartGame();
-            
+
             Debug.Log($"GameLauncher: Game {minigame.GetGameId()} initialized and started");
+        }
+
+        private static void ReturnToMainScene()
+        {
+            if (MiniGameLoader.Instance != null && MiniGameLoader.Instance.HasLoadedScene)
+            {
+                MiniGameLoader.Instance.UnloadCurrentMiniGame();
+            }
+            else
+            {
+                SceneNavigationManager.Instance.UnloadGameScene();
+            }
         }
     }
 }

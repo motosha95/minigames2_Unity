@@ -286,7 +286,6 @@ namespace Minigames.UI
         private void StartGameSession(GameInfo game)
         {
             Debug.Log($"GameId:{game.id}");
-            // Start game session and load game scene
             GameSessionManager.Instance.StartSession(
                 game.id,
                 null,
@@ -294,10 +293,24 @@ namespace Minigames.UI
                 {
                     Debug.Log($"MainMenuController: Session started: {session.id}");
                     WebViewBridge.Instance.NotifyGameStart(game.id);
-                    SceneNavigationManager.Instance.LoadGameScene(game.sceneName, () =>
+
+                    string addressKey = !string.IsNullOrEmpty(game.addressableKey)
+                        ? game.addressableKey
+                        : MiniGameLoader.GetAddressableKey(game.sceneName);
+                    if (MiniGameLoader.Instance != null && !string.IsNullOrEmpty(addressKey))
                     {
-                        Debug.Log($"MainMenuController: Game scene loaded: {game.sceneName}");
-                    });
+                        MiniGameLoader.Instance.LoadMiniGame(addressKey, () =>
+                        {
+                            Debug.Log($"MainMenuController: Game scene loaded via Addressables: {addressKey}");
+                        });
+                    }
+                    else
+                    {
+                        SceneNavigationManager.Instance.LoadGameScene(game.sceneName, () =>
+                        {
+                            Debug.Log($"MainMenuController: Game scene loaded: {game.sceneName}");
+                        });
+                    }
                 },
                 (error) =>
                 {
