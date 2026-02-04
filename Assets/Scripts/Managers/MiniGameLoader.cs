@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -29,7 +30,7 @@ namespace Minigames.Managers
         [Header("UI References")]
         public GameObject loadingPanel;
         public Slider progressBar;
-        public Text progressText;
+        public TextMeshProUGUI progressText;
 
         [Header("Main Menu (hide when game loads, restore when unloads)")]
         [Tooltip("Main menu content to hide when loading a minigame and restore when returning.")]

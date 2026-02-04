@@ -11,7 +11,7 @@ namespace Minigames.UI
     /// <summary>
     /// Controls the player profile UI panel.
     /// Displays profile data from GET /api/App/player/profile:
-    /// username, countryCode, icon, frame, score, lastLoginAt, isActive, availableKeys
+    /// username, countryCode, icon, frame, availableKeys
     /// </summary>
     public class ProfileController : MonoBehaviour
     {
@@ -19,12 +19,7 @@ namespace Minigames.UI
         [SerializeField] private TextMeshProUGUI usernameText;
         [SerializeField] private TextMeshProUGUI displayNameText;
         [SerializeField] private TextMeshProUGUI countryCodeText;
-        [SerializeField] private TextMeshProUGUI scoreText;
-        [SerializeField] private TextMeshProUGUI totalScoreText;
-        [SerializeField] private TextMeshProUGUI weeklyScoreText;
         [SerializeField] private TextMeshProUGUI availableKeysText;
-        [SerializeField] private TextMeshProUGUI lastLoginAtText;
-        [SerializeField] private TextMeshProUGUI isActiveText;
 
         [Header("Avatar (icon/frame from profile)")]
         [SerializeField] private Image iconImage;
@@ -38,7 +33,6 @@ namespace Minigames.UI
         [SerializeField] private Button updateDisplayNameButton; // Legacy: updates only display name
 
         [Header("Actions")]
-        [SerializeField] private Button refreshButton;
         [SerializeField] private Button logoutButton;
 
         [Header("Loading")]
@@ -46,9 +40,6 @@ namespace Minigames.UI
 
         private void Start()
         {
-            if (refreshButton != null)
-                refreshButton.onClick.AddListener(RefreshProfile);
-
             if (updateProfileButton != null)
                 updateProfileButton.onClick.AddListener(UpdateProfile);
 
@@ -70,20 +61,12 @@ namespace Minigames.UI
         private void SubscribeToEvents()
         {
             PlayerProfileManager.Instance.OnProfileUpdated += HandleProfileUpdated;
-            LeaderboardManager.Instance.OnMyTotalScoreLoaded += HandleTotalScoreLoaded;
-            LeaderboardManager.Instance.OnMyWeeklyScoreLoaded += HandleWeeklyScoreLoaded;
         }
 
         private void UnsubscribeFromEvents()
         {
             if (PlayerProfileManager.Instance != null)
                 PlayerProfileManager.Instance.OnProfileUpdated -= HandleProfileUpdated;
-
-            if (LeaderboardManager.Instance != null)
-            {
-                LeaderboardManager.Instance.OnMyTotalScoreLoaded -= HandleTotalScoreLoaded;
-                LeaderboardManager.Instance.OnMyWeeklyScoreLoaded -= HandleWeeklyScoreLoaded;
-            }
         }
 
         private void LoadProfile()
@@ -97,13 +80,6 @@ namespace Minigames.UI
                     PopupManager.Instance.ShowError("Profile", $"Failed to load: {error}");
                 }
             );
-            LeaderboardManager.Instance.LoadMyTotalScore();
-            LeaderboardManager.Instance.LoadMyWeeklyScore();
-        }
-
-        private void RefreshProfile()
-        {
-            LoadProfile();
         }
 
         private void UpdateProfile()
@@ -166,17 +142,8 @@ namespace Minigames.UI
             if (countryCodeText != null)
                 countryCodeText.text = string.IsNullOrEmpty(profile.countryCode) ? "—" : profile.countryCode;
 
-            if (scoreText != null)
-                scoreText.text = profile.totalScore.ToString();
-
             if (availableKeysText != null)
                 availableKeysText.text = profile.keysBalance.ToString();
-
-            if (lastLoginAtText != null)
-                lastLoginAtText.text = FormatLastLogin(profile.lastLoginAt);
-
-            if (isActiveText != null)
-                isActiveText.text = profile.isActive ? "Active" : "Inactive";
 
             if (displayNameInput != null)
                 displayNameInput.text = profile.displayName ?? profile.username ?? "";
@@ -198,45 +165,15 @@ namespace Minigames.UI
                 frameImage.gameObject.SetActive(false);
         }
 
-        private void HandleTotalScoreLoaded(int score)
-        {
-            if (totalScoreText != null)
-                totalScoreText.text = score.ToString();
-        }
-
-        private void HandleWeeklyScoreLoaded(int score)
-        {
-            if (weeklyScoreText != null)
-                weeklyScoreText.text = score.ToString();
-        }
-
         private void ClearProfile()
         {
             if (usernameText != null) usernameText.text = "";
             if (displayNameText != null) displayNameText.text = "";
             if (countryCodeText != null) countryCodeText.text = "";
-            if (scoreText != null) scoreText.text = "";
-            if (totalScoreText != null) totalScoreText.text = "";
-            if (weeklyScoreText != null) weeklyScoreText.text = "";
             if (availableKeysText != null) availableKeysText.text = "";
-            if (lastLoginAtText != null) lastLoginAtText.text = "";
-            if (isActiveText != null) isActiveText.text = "";
             if (displayNameInput != null) displayNameInput.text = "";
             if (usernameInput != null) usernameInput.text = "";
             if (countryCodeInput != null) countryCodeInput.text = "";
-        }
-
-        private static string FormatLastLogin(DateTime? lastLoginAt)
-        {
-            if (lastLoginAt == null) return "Never";
-            var dt = lastLoginAt.Value;
-            var now = DateTime.UtcNow;
-            var diff = now - dt;
-            if (diff.TotalMinutes < 1) return "Just now";
-            if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m ago";
-            if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}h ago";
-            if (diff.TotalDays < 7) return $"{(int)diff.TotalDays}d ago";
-            return dt.ToString("MMM d, yyyy");
         }
 
         private void LoadProfileImage(string url, Image target)

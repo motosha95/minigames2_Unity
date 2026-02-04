@@ -9,7 +9,8 @@ namespace Minigames.UI
 {
     /// <summary>
     /// Controls the main menu UI in the Main Scene.
-    /// Handles navigation between different sections (games, profile, leaderboards).
+    /// Handles navigation between different sections (games, leaderboards, marketplace, quests).
+    /// Profile is accessed via the Settings panel.
     /// </summary>
     public class MainMenuController : MonoBehaviour
     {
@@ -19,14 +20,16 @@ namespace Minigames.UI
 
         [Header("Menu Panels")]
         [SerializeField] private GameObject gamesPanel;
-        [SerializeField] private GameObject profilePanel;
         [SerializeField] private GameObject leaderboardsPanel;
         [SerializeField] private GameObject marketplacePanel;
         [SerializeField] private GameObject questsPanel;
 
+        [Header("Settings")]
+        [SerializeField] private GameObject settingsPanel;
+        [SerializeField] private Button settingsButton;
+
         [Header("Navigation Buttons")]
         [SerializeField] private Button gamesButton;
-        [SerializeField] private Button profileButton;
         [SerializeField] private Button leaderboardsButton;
         [SerializeField] private Button marketplaceButton;
         [SerializeField] private Button questsButton;
@@ -59,9 +62,6 @@ namespace Minigames.UI
             if (gamesButton != null)
                 gamesButton.onClick.AddListener(() => ShowPanel(gamesPanel));
 
-            if (profileButton != null)
-                profileButton.onClick.AddListener(() => ShowPanel(profilePanel));
-
             if (leaderboardsButton != null)
                 leaderboardsButton.onClick.AddListener(() => ShowPanel(leaderboardsPanel));
 
@@ -70,6 +70,10 @@ namespace Minigames.UI
 
             if (questsButton != null)
                 questsButton.onClick.AddListener(() => ShowPanel(questsPanel));
+
+            // Settings button opens settings panel (which contains profile)
+            if (settingsButton != null && settingsPanel != null)
+                settingsButton.onClick.AddListener(OpenSettings);
         }
 
         private void SubscribeToEvents()
@@ -131,6 +135,7 @@ namespace Minigames.UI
         {
             if (authPanel != null) authPanel.SetActive(false);
             if (mainContentRoot != null) mainContentRoot.SetActive(true);
+            if (settingsPanel != null) settingsPanel.SetActive(false);
             ShowPanel(gamesPanel);
         }
 
@@ -212,13 +217,18 @@ namespace Minigames.UI
         {
             // Hide all panels
             if (gamesPanel != null) gamesPanel.SetActive(false);
-            if (profilePanel != null) profilePanel.SetActive(false);
             if (leaderboardsPanel != null) leaderboardsPanel.SetActive(false);
             if (marketplacePanel != null) marketplacePanel.SetActive(false);
             if (questsPanel != null) questsPanel.SetActive(false);
 
             // Show selected panel
             if (panel != null) panel.SetActive(true);
+        }
+
+        private void OpenSettings()
+        {
+            if (settingsPanel != null)
+                settingsPanel.SetActive(true);
         }
 
         private void ShowError(string message)
